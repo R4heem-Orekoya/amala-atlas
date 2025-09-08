@@ -42,7 +42,7 @@ export default function Home() {
                   Featured Amala Spots
                </h2>
                <p className="text-lg text-muted-foreground">
-                  Discover the community's top-rated authentic Amala locations
+                  Discover the community&apos;s top-rated authentic Amala locations
                </p>
             </div>
 
