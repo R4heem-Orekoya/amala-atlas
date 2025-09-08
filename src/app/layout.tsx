@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
-import { DM_Sans } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
+import QueryProvider from "@/providers/query";
 
-const dmSans = DM_Sans({
+const dmSans = Inter({
    variable: "--font-dm-sans",
    subsets: ["latin"],
 });
@@ -40,7 +41,9 @@ export default function RootLayout({
 }>) {
    return (
       <html lang="en">
-         <body className={`${dmSans.variable} antialiased`}>{children}</body>
+         <QueryProvider>
+            <body className={`${dmSans.variable} antialiased`}>{children}</body>
+         </QueryProvider>
       </html>
    );
 }

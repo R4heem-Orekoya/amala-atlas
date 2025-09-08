@@ -1,6 +1,5 @@
 "use client";
-
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 type Location = {
    latitude: number;
@@ -12,13 +11,14 @@ export default function useLocation() {
    const [loading, setLoading] = useState(true);
    const [error, setError] = useState<string | null>(null);
 
-   useEffect(() => {
+   const getLocation = useCallback(() => {
       if (!navigator.geolocation) {
          setError("Geolocation is not supported by your browser");
          setLoading(false);
          return;
       }
 
+      setLoading(true);
       navigator.geolocation.getCurrentPosition(
          (pos) => {
             setLocation({
@@ -34,5 +34,9 @@ export default function useLocation() {
       );
    }, []);
 
-   return { location, loading, error };
+   useEffect(() => {
+      getLocation(); // fetch on mount
+   }, [getLocation]);
+
+   return { location, loading, error, refresh: getLocation };
 }
