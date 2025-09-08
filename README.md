@@ -1,36 +1,99 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Amala Atlas 🍲🗺️
 
-## Getting Started
+**Finding authentic Amala shouldn’t be luck.**  
+Amala Atlas is a crowdsourced discovery & verification platform for locating the best Amala spots in Lagos (and beyond).  
+Built for the **Amala Hackathon @ DevFest Lagos 2025**.
 
-First, run the development server:
+---
 
+## 🚀 What is Amala Atlas?
+Amala Atlas is a vertical discovery + verification layer (not just a Google Maps clone).  
+It combines:
+- **Crowdsourcing**: Users can add, review, and upload photos of Amala spots.  
+- **Autonomous Discovery**: An agentic system that scrapes the public web (blogs, reviews, menus, directories) to propose possible Amala spots for community verification.  
+- **Agentic Intake**: Users can submit spots via chat or voice, making contributions natural and fast.  
+- **Map UI**: An interactive map for browsing and discovering authentic Amala spots nearby.  
+
+The platform is **open source** so future generations can continue to grow and maintain it.
+
+---
+
+## 🏆 Hackathon Timeline
+- **Day 1 (Sept 13)** → Deliver a working MVP + live demo link.  
+- **Final (Sept 27)** → Publish polished beta + repo + documentation.  
+
+---
+
+## ✨ Features
+- 🌍 Map-based discovery of Amala locations.  
+- 🤖 Agentic assistant for submitting and verifying spots.  
+- 🔎 Autonomous web-scraping to auto-discover likely locations.  
+- 📸 Community-contributed photos & reviews.  
+- 🛡️ Duplicate prevention & verification flow.  
+- 📖 Open source for sustainability beyond the hackathon.  
+
+---
+
+## 🛠️ Tech Stack
+Framework-agnostic by design.  
+Recommended tools:  
+- **Frontend:** Next.js / React / Vue (team choice)  
+- **Backend:** Node.js / Convex / Firebase / Nest.js / Python FastAPI (team choice)  
+- **Map Integration:** Leaflet / Mapbox / Google Maps SDK  
+- **Agentic Layer:** Google’s Agent Development Kit (ADK) + A2A, or other LLM frameworks  
+- **Database:** Postgres / MongoDB / Convex / Firestore  
+
+---
+
+## 📦 Getting Started
+
+### Prerequisites
+- Node.js >= 18
+- npm or yarn
+- A Mapbox (or Google Maps) API key
+
+### Setup
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# Clone repo
+git clone https://github.com/R4heem-Orekoya/amala-atlas
+cd amala-atlas
+
+# Install dependencies
+pnpm install
+
+# Start dev server
+pnpm run dev
+
+Then open `http://localhost:3000` in your browser.
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📹 Demo
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- 📺 [Demo Video Link (3–5 mins)](https://youtu.be/placeholder)  
+- 🔗 [Live Demo](https://amala-atlas.vercel.app)  
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## 🤝 Contributing
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+We welcome contributions from the community!  
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+To contribute:  
 
-## Deploy on Vercel
+1. **Fork** this repo  
+2. **Create a feature branch**  
+   ```bash
+   git checkout -b feature/amala-reviews
+3. ```bash
+   git commit -m "Add reviews section"
+4. ```bash
+   git push origin feature/amala-reviews
+5. Open a **Pull Request** 🚀
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 📜 License
+
+This project is licensed under the MIT License – see the [LICENSE.md](https://github.com/R4heem-Orekoya/amala-atlas) file for details.
