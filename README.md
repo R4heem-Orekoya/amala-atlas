@@ -96,4 +96,4 @@ To contribute:
 
 ## 📜 License
 
-This project is licensed under the MIT License – see the [LICENSE.md](https://github.com/R4heem-Orekoya/amala-atlas) file for details.
+This project is licensed under the MIT License – see the [LICENSE.md](https://github.com/R4heem-Orekoya/amala-atlas/blob/main/LICENSE.md) file for details.
