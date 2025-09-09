@@ -106,7 +106,7 @@ export default function Page() {
           >
             <TabsList className="bg-transparent my-2 w-full justify-between">
               <TabsTrigger value="verified">Verified Spots</TabsTrigger>
-              <TabsTrigger value="user">User's Spots</TabsTrigger>
+              <TabsTrigger value="user">User&apos;s Spots</TabsTrigger>
               <TabsTrigger value="ai">AI Suggestions</TabsTrigger>
             </TabsList>
             <ScrollArea className="overflow-y-auto flex-1 flex flex-col">

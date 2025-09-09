@@ -1,6 +1,5 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
 import {
    MapIcon,
    MoonIcon,
@@ -8,6 +7,7 @@ import {
    SunIcon,
    TreesIcon,
 } from "lucide-react";
+import React, { useState } from "react";
 
 import { useMap } from "@/context/map";
 import { Tabs, TabsList, TabsTrigger } from "../ui/tabs";

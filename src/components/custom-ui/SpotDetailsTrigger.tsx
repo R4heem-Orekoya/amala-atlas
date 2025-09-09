@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Sheet,
   SheetContent,
@@ -10,19 +10,20 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { Place } from "@/types";
 import {
-  MapPin,
-  ThumbsUp,
-  ThumbsDown,
   Bookmark,
-  Share2,
   Flag,
-  Send,
+  MapPin,
   MessageSquare,
+  Send,
+  Share2,
+  ThumbsDown,
+  ThumbsUp,
 } from "lucide-react";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { useState } from "react";
 import { ShareSpotModal } from "./ShareSpotModal";
-import { AmalaSpot, Place, Spots } from "@/types";
+import Image from "next/image";
 
 type SpotDetailsTriggerProps = {
   children: React.ReactNode;
@@ -48,11 +49,14 @@ export function SpotDetailsTrigger({
         <SheetHeader className="p-4 border-b">
           <div className="h-40 w-full rounded-md overflow-hidden bg-muted relative mt-7">
             {spot?.imageUrl ? (
-              <img
-                src={spot.imageUrl}
-                alt={spot.name}
-                className="w-full h-full object-cover"
-              />
+              <div className="w-full h-full ">
+                <Image
+                  src={spot.imageUrl}
+                  alt={spot.name}
+                  fill
+                  className="object-cover"
+                />
+              </div>
             ) : (
               <div className="flex items-center justify-center h-full text-muted-foreground">
                 <MapPin className="w-12 h-12 opacity-40" />

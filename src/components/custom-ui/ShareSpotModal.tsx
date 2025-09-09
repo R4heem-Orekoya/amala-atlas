@@ -1,24 +1,24 @@
-'use client'
+"use client";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Copy,
-  Mail,
-  MapPin,
-  MessageSquare,
-  Share2,
-  Twitter
-} from "lucide-react";
+import { Mail, MapPin, MessageSquare, Twitter } from "lucide-react";
 import { useState } from "react";
 import { Input } from "../ui/input";
+import Image from "next/image";
 
-export function ShareSpotModal({ spot, children }: { spot?: any, children: React.ReactNode }) {
+export function ShareSpotModal({
+  spot,
+  children,
+}: {
+  //eslint-disable-next-line
+  spot?: any;
+  children: React.ReactNode;
+}) {
   const [copied, setCopied] = useState(false);
 
   const shareUrl = `https://eventnest.app/spots/${spot?.id ?? "123"}`;
@@ -35,11 +35,14 @@ export function ShareSpotModal({ spot, children }: { spot?: any, children: React
       <DialogContent className="sm:max-w-lg p-0 overflow-hidden">
         <div className="h-40 w-full bg-muted overflow-hidden">
           {spot?.imageUrl ? (
-            <img
-              src={spot.imageUrl}
-              alt={spot.name}
-              className="w-full h-full object-cover"
-            />
+            <div className="w-full h-full">
+              <Image
+                src={spot.imageUrl}
+                alt={spot.name}
+                fill
+                className=" object-cover"
+              />
+            </div>
           ) : (
             <div className="flex items-center justify-center h-full text-muted-foreground">
               <MapPin className="w-10 h-10 opacity-40" />
