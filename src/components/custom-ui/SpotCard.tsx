@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { SpotDetailsTrigger } from "@/components/custom-ui/SpotDetailsTrigger";
 import { Spots } from "@/types";
+import { ShareSpotModal } from "./ShareSpotModal";
 
 type SpotCardProps = {
   spot: Spots["results"][0];
@@ -52,7 +53,9 @@ export default function SpotCard({ spot }: SpotCardProps) {
               <Bookmark className="mr-2 h-4 w-4" /> Bookmark
             </DropdownMenuItem>
             <DropdownMenuItem className="cursor-pointer text-green-600 focus:text-green-700 focus:bg-green-50">
-              <Share2 className="mr-2 h-4 w-4" /> Share
+              <ShareSpotModal spot={spot}>
+                <Share2 className="mr-2 h-4 w-4" /> Share
+              </ShareSpotModal>
             </DropdownMenuItem>
             <DropdownMenuItem className="cursor-pointer text-purple-600 focus:text-purple-700 focus:bg-purple-50">
               <MapPin className="mr-2 h-4 w-4" /> Get Directions
