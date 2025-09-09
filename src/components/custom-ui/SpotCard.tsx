@@ -52,11 +52,11 @@ export default function SpotCard({ spot }: SpotCardProps) {
             <DropdownMenuItem className="cursor-pointer text-blue-600 focus:text-blue-700 focus:bg-blue-50">
               <Bookmark className="mr-2 h-4 w-4" /> Bookmark
             </DropdownMenuItem>
-            <DropdownMenuItem className="cursor-pointer text-green-600 focus:text-green-700 focus:bg-green-50">
               <ShareSpotModal spot={spot}>
-                <Share2 className="mr-2 h-4 w-4" /> Share
+                <Button className="justify-start w-full bg-transparent shadow-none border-none hover:bg-green-400/5 cursor-pointer text-green-600 focus:text-green-700 focus:bg-green-50">
+                  <Share2 className="mr-2 h-4 w-4" /> Share
+                </Button>
               </ShareSpotModal>
-            </DropdownMenuItem>
             <DropdownMenuItem className="cursor-pointer text-purple-600 focus:text-purple-700 focus:bg-purple-50">
               <MapPin className="mr-2 h-4 w-4" /> Get Directions
             </DropdownMenuItem>
