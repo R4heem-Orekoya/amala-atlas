@@ -9,7 +9,7 @@ const dmSans = Inter({
 });
 
 export const metadata: Metadata = {
-   title: "Amala Atlas 🍲🗺️",
+   title: "Amala Atlas",
    description:
       "Crowdsourced discovery & verification platform for authentic Amala spots. Built at Amala Hackathon – DevFest Lagos 2025.",
    keywords: [
