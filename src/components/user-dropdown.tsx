@@ -8,7 +8,6 @@ import {
    DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
 import { UserResource } from "@clerk/types";
 import Link from "next/link";
@@ -59,7 +58,7 @@ export default function UserDropdown({ user }: UserDropdownProps) {
             <DropdownMenuItem>
                <Link
                   href="/"
-                  className="flex items-center gap-2 font-medium tracking-tight"
+                  className="flex items-center gap-2 tracking-tight"
                >
                   <svg
                      xmlns="http://www.w3.org/2000/svg"
@@ -72,13 +71,13 @@ export default function UserDropdown({ user }: UserDropdownProps) {
                      <path
                         d="M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z"
                         stroke="#141B34"
-                        stroke-width="1.5"
+                        strokeWidth="1.5"
                      />
                      <path
                         d="M14 14H10C7.23858 14 5 16.2386 5 19C5 20.1046 5.89543 21 7 21H17C18.1046 21 19 20.1046 19 19C19 16.2386 16.7614 14 14 14Z"
                         stroke="#141B34"
-                        stroke-width="1.5"
-                        stroke-linejoin="round"
+                        strokeWidth="1.5"
+                        strokeLinejoin="round"
                      />
                   </svg>
                   Account Details

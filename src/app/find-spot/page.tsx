@@ -25,7 +25,7 @@ export default function Page() {
   });
 
   return (
-    <main className="relative grid grid-cols-1 lg:grid-cols-7 gap-4 p-6 min-h-screen">
+    <main className="relative grid grid-cols-1 lg:grid-cols-7 gap-4 p-6 lg:max-h-screen overflow-y-hidden">
       <div className="col-span-1 lg:col-span-2">
         <SideContent
           data={data}

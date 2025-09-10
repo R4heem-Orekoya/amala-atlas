@@ -65,7 +65,7 @@ export default function MapStyles() {
                   <TabsTrigger
                      key={style.id}
                      value={style.id}
-                     className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-sm flex items-center sm:px-3 sm:py-1.5"
+                     className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-sm flex items-center sm:px-3 sm:py-1.5 rounded-sm"
                   >
                      {style.icon}
                      <span className="hidden sm:inline">{style.label}</span>

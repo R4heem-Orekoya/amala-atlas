@@ -18,7 +18,7 @@ export default function SideContent({ data, isLoading, error }: SidebarProps) {
   const lat = location?.latitude;
 
   return (
-    <div className="sticky top-6 flex flex-col max-h-[calc(100vh-48px)]">
+    <div className="sticky top-6 flex flex-col max-h-[calc(100vh-112px)]">
       <div className="w-full flex flex-col">
         <div className="relative w-full">
           <Input
