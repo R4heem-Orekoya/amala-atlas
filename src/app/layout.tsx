@@ -5,7 +5,7 @@ import QueryProvider from "@/providers/query";
 import { ClerkProvider } from "@clerk/nextjs";
 import ConvexClientProvider from "@/providers/convex";
 import Navbar from "@/components/navbar";
-import { Toaster } from "@/components/ui/sonner"
+import { Toaster } from "@/components/ui/sonner";
 
 const dmSans = Inter({
    variable: "--font-dm-sans",
@@ -51,7 +51,11 @@ export default function RootLayout({
                   <body className={`${dmSans.variable} antialiased`}>
                      <Navbar />
                      {children}
-                     <Toaster />
+                     <Toaster
+                        richColors
+                        position="top-right"
+                        className="z-[99999]"
+                     />
                   </body>
                </QueryProvider>
             </ConvexClientProvider>

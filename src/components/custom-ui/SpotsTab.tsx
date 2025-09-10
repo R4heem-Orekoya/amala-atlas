@@ -4,15 +4,14 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SpotCard from "./SpotCard";
 import { Spots } from "@/types";
+import { Doc } from "../../../convex/_generated/dataModel";
 
 type SpotsTabsProps = {
-  data?: Spots;
+  data?: Doc<"spots">[];
   isLoading: boolean;
-  //eslint-disable-next-line
-  error: any;
 };
 
-export default function SpotsTabs({ data, isLoading, error }: SpotsTabsProps) {
+export default function SpotsTabs({ data, isLoading }: SpotsTabsProps) {
   return (
     <Tabs
       defaultValue="verified"
@@ -29,10 +28,9 @@ export default function SpotsTabs({ data, isLoading, error }: SpotsTabsProps) {
           className="flex flex-col flex-1"
         >
           {isLoading && <p>Loading spots...</p>}
-          {error && <p>Failed to load spots</p>}
-          {data?.results.map((spot) => (
+          {data?.map((spot) => (
             <SpotCard
-              key={spot.fsq_place_id}
+              key={spot._id}
               spot={spot}
             />
           ))}

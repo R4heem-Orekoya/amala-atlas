@@ -5,15 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import SpotsTabs from "./SpotsTab";
 import useLocation from "@/hooks/use-location";
-import { Spots } from "@/types";
+import { Doc } from "../../../convex/_generated/dataModel";
 
 type SidebarProps = {
-  data?: Spots;
+  data?: Doc<"spots">[];
   isLoading: boolean;
-  error: unknown;
 };
 
-export default function SideContent({ data, isLoading, error }: SidebarProps) {
+export default function SideContent({ data, isLoading }: SidebarProps) {
   const { location, refresh } = useLocation();
   const lat = location?.latitude;
 
@@ -37,7 +36,7 @@ export default function SideContent({ data, isLoading, error }: SidebarProps) {
             <ArrowRightIcon size={16} />
           </button>
         </div>
-        <div className="flex items-center justify-between text-sm mt-2 p-2 rounded-md border bg-muted/30">
+        {/* <div className="flex items-center justify-between text-sm mt-2 p-2 rounded-md border bg-muted/30">
           {data && data.context?.geo_bounds.circle?.center?.latitude === lat ? (
             <span className="text-muted-foreground">
               <MapPinned className="w-5 h-5 inline-block mr-2" />
@@ -52,12 +51,11 @@ export default function SideContent({ data, isLoading, error }: SidebarProps) {
               Use Current Location
             </Button>
           )}
-        </div>
+        </div> */}
       </div>
       <SpotsTabs
         data={data}
         isLoading={isLoading}
-        error={error}
       />
     </div>
   );
