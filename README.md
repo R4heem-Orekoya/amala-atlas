@@ -37,11 +37,11 @@ The platform is **open source** so future generations can continue to grow and m
 ## 🛠️ Tech Stack
 Framework-agnostic by design.  
 Recommended tools:  
-- **Frontend:** Next.js / React / Vue (team choice)  
-- **Backend:** Node.js / Convex / Firebase / Nest.js / Python FastAPI (team choice)  
-- **Map Integration:** Leaflet / Mapbox / Google Maps SDK  
-- **Agentic Layer:** Google’s Agent Development Kit (ADK) + A2A, or other LLM frameworks  
-- **Database:** Postgres / MongoDB / Convex / Firestore  
+- **Frontend:** Next.js
+- **Backend:** Convex
+- **Map Integration:** Mapbox
+- **Agentic Layer:** Langchain 
+- **Database:** Convex
 
 ---
 
