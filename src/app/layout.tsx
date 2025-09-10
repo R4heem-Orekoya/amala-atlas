@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import QueryProvider from "@/providers/query";
+import { ClerkProvider } from "@clerk/nextjs";
+import ConvexClientProvider from "@/providers/convex";
+import Navbar from "@/components/navbar";
+import { Toaster } from "@/components/ui/sonner"
 
 const dmSans = Inter({
    variable: "--font-dm-sans",
@@ -40,10 +44,18 @@ export default function RootLayout({
    children: React.ReactNode;
 }>) {
    return (
-      <html lang="en">
-         <QueryProvider>
-            <body className={`${dmSans.variable} antialiased`}>{children}</body>
-         </QueryProvider>
-      </html>
+      <ClerkProvider>
+         <html lang="en">
+            <ConvexClientProvider>
+               <QueryProvider>
+                  <body className={`${dmSans.variable} antialiased`}>
+                     <Navbar />
+                     {children}
+                     <Toaster />
+                  </body>
+               </QueryProvider>
+            </ConvexClientProvider>
+         </html>
+      </ClerkProvider>
    );
 }

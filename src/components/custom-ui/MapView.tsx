@@ -2,7 +2,7 @@
 
 import MapStyles from "@/components/map/styles";
 import MapControls from "@/components/map/controls";
-import MapProvider from "@/app/providers/mapbox";
+import MapProvider from "@/providers/mapbox";
 
 type MapViewProps = {
   mapContainerRef: React.RefObject<HTMLDivElement | null>;
