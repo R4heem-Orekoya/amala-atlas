@@ -1,0 +1,21 @@
+import { AddSpotForm } from "@/components/custom-ui/AddSpotForm";
+import SideContent from "@/components/custom-ui/SideContent";
+import { AIChat } from "@/components/ui/AiChat";
+
+export default function Page() {
+  return (
+    <main className="relative grid grid-cols-1 lg:grid-cols-7 gap-4 p-6 lg:max-h-screen overflow-y-hidden">
+      <div className="col-span-1 lg:col-span-2">
+        <SideContent>
+          <AddSpotForm />
+        </SideContent>
+      </div>
+
+      <div className="col-span-5">
+        <div className="sticky top-6  h-[calc(100vh-48px)]  border border-black/20 rounded-lg overflow-hidden flex justify-center items-center">
+          <AIChat />
+        </div>
+      </div>
+    </main>
+  );
+}

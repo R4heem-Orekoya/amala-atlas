@@ -7,9 +7,12 @@ import Logo from "./logo";
 import { Button } from "./ui/button";
 import UserDropdown from "./user-dropdown";
 import Link from "next/link";
+import { mapClerkUser } from "@/lib/utils";
 
 export default function Navbar() {
    const { user } = useUser();
+   const appUser = mapClerkUser(user)
+
    return (
       <header className="sticky top-0 flex items-center justify-between h-16 px-6 bg-background z-50">
          <Link href="/">
@@ -73,7 +76,7 @@ export default function Navbar() {
 
             <div>
                <Authenticated>
-                  {user && <UserDropdown user={user} />}
+                  {user && <UserDropdown user={appUser!} />}
                </Authenticated>
                <Unauthenticated>
                   <SignInButton>

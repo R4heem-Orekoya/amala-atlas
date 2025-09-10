@@ -106,3 +106,12 @@ type GeoBounds = {
     radius: number;
   };
 };
+
+export type AppUser = {
+  id: string;
+  email: string | null;
+  fullName: string | null;
+  firstName: string | null;
+  lastName: string | null;
+  imageUrl: string | null;
+};

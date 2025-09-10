@@ -11,9 +11,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useState } from "react";
 import { UserResource } from "@clerk/types";
 import Link from "next/link";
+import { AppUser } from "@/types";
 
 interface UserDropdownProps {
-   user: UserResource;
+   user: AppUser;
 }
 
 export default function UserDropdown({ user }: UserDropdownProps) {
@@ -50,7 +51,7 @@ export default function UserDropdown({ user }: UserDropdownProps) {
                <div className="grid">
                   <p className="text-sm">{user.fullName}</p>
                   <span className="text-xs text-muted-foreground">
-                     {user.emailAddresses[0].emailAddress}
+                     {user.email}
                   </span>
                </div>
             </div>
