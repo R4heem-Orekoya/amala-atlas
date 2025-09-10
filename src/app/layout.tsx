@@ -1,11 +1,10 @@
+import { Toaster } from "@/components/ui/sonner";
+import ConvexClientProvider from "@/providers/convex";
+import QueryProvider from "@/providers/query";
+import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import QueryProvider from "@/providers/query";
-import { ClerkProvider } from "@clerk/nextjs";
-import ConvexClientProvider from "@/providers/convex";
-import Navbar from "@/components/navbar";
-import { Toaster } from "@/components/ui/sonner";
 
 const dmSans = Inter({
   variable: "--font-dm-sans",

@@ -1,5 +1,6 @@
 "use client";
 
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
    DropdownMenu,
    DropdownMenuContent,
@@ -7,11 +8,9 @@ import {
    DropdownMenuSeparator,
    DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useState } from "react";
-import { UserResource } from "@clerk/types";
-import Link from "next/link";
 import { AppUser } from "@/types";
+import Link from "next/link";
+import { useState } from "react";
 
 interface UserDropdownProps {
    user: AppUser;

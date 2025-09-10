@@ -1,10 +1,9 @@
 "use client"
 
-import { LucideProps } from "lucide-react"
-import { ForwardRefExoticComponent, RefAttributes, useCallback } from "react"
-import Link from "next/link"
 import { cn } from "@/lib/utils"
-import { toast } from "sonner"
+import { LucideProps } from "lucide-react"
+import Link from "next/link"
+import { ForwardRefExoticComponent, RefAttributes } from "react"
 
 interface MobileItemProps {
    href: string
