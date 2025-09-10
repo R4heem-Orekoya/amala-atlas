@@ -67,7 +67,7 @@ export default function Navbar() {
                      d="M12.499 14.5L11.0384 9.97891C10.9465 9.69466 10.6648 9.5 10.3452 9.5C10.0256 9.5 9.74382 9.69466 9.65199 9.97891L8.19133 14.5M14.9989 9.5V14.5M8.72979 13H11.9606"
                      stroke="#141B34"
                      strokeWidth="1.5"
-                     stroke-linecap="round"
+                     strokeLinecap="round"
                      strokeLinejoin="round"
                   />
                </svg>
@@ -80,7 +80,7 @@ export default function Navbar() {
                </Authenticated>
                <Unauthenticated>
                   <SignInButton>
-                     <Button>Create an account</Button>
+                     <Button>Login</Button>
                   </SignInButton>
                </Unauthenticated>
             </div>

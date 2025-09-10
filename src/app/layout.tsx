@@ -5,6 +5,11 @@ import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import QueryProvider from "@/providers/query";
+import { ClerkProvider } from "@clerk/nextjs";
+import ConvexClientProvider from "@/providers/convex";
+import Navbar from "@/components/navbar";
+import { Toaster } from "@/components/ui/sonner";
 
 const dmSans = Inter({
   variable: "--font-dm-sans",
@@ -42,18 +47,23 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return (
-    <ClerkProvider>
-      <html lang="en">
-        <ConvexClientProvider>
-          <QueryProvider>
-            <body className={`${dmSans.variable} antialiased`}>
-              {children}
-              <Toaster />
-            </body>
-          </QueryProvider>
-        </ConvexClientProvider>
-      </html>
-    </ClerkProvider>
-  );
+   return (
+      <ClerkProvider>
+         <html lang="en">
+            <ConvexClientProvider>
+               <QueryProvider>
+                  <body className={`${dmSans.variable} antialiased`}>
+                     <Navbar />
+                     {children}
+                     <Toaster
+                        richColors
+                        position="top-right"
+                        className="z-[99999]"
+                     />
+                  </body>
+               </QueryProvider>
+            </ConvexClientProvider>
+         </html>
+      </ClerkProvider>
+   );
 }

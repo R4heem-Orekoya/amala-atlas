@@ -21,11 +21,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { SpotDetailsTrigger } from "@/components/custom-ui/SpotDetailsTrigger";
-import { Spots } from "@/types";
 import { ShareSpotModal } from "./ShareSpotModal";
+import { Doc } from "../../../convex/_generated/dataModel";
 
 type SpotCardProps = {
-  spot: Spots["results"][0];
+  spot: Doc<"spots">;
 };
 
 export default function SpotCard({ spot }: SpotCardProps) {
@@ -66,12 +66,12 @@ export default function SpotCard({ spot }: SpotCardProps) {
 
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <MapPin className="w-4 h-4 shrink-0" />
-        <span>{spot.location.formatted_address}</span>
+        <span>{spot.address}</span>
       </div>
 
       <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
         <Ruler className="w-4 h-4 shrink-0" />
-        <span>{((spot.distance ?? 0) / 1000).toFixed(1)} km away</span>
+        <span>{((spot.geocoords.lat ?? 0) / 1000).toFixed(1)} km away</span>
       </div>
 
       <div className="flex gap-2">
