@@ -32,7 +32,6 @@ import NumberFlow from "@number-flow/react";
 import { toast } from "sonner";
 import { ConvexError } from "convex/values";
 import { cn } from "@/lib/utils";
-import { error } from "console";
 
 type SpotDetailsTriggerProps = {
    children: React.ReactNode;

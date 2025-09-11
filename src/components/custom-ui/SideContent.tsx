@@ -1,12 +1,5 @@
 "use client";
 
-import { ArrowRightIcon, MapPinned, SearchIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import SpotsTabs from "./SpotsTab";
-import useLocation from "@/hooks/use-location";
-import { Doc } from "../../../convex/_generated/dataModel";
-
 type SidebarProps = {
   children: React.ReactNode
 };

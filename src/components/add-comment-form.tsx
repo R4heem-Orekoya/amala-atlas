@@ -23,14 +23,14 @@ export default function AddCommentForm({ spotId }: AddCommentFormProps) {
       register,
       reset,
       handleSubmit,
-      formState: { errors, isSubmitting },
+      formState: { errors },
    } = useForm<TComment>({
       resolver: zodResolver(Comment),
    });
 
    async function onsubmit(data: TComment) {
       try {
-         const res = await addNewComment({
+         await addNewComment({
             text: data.text,
             spotId,
          });
