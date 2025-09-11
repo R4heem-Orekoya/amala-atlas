@@ -20,6 +20,7 @@ import {
    Location01Icon,
    Comment01Icon,
    Image03Icon,
+   CheckmarkBadge01Icon,
 } from "@hugeicons/core-free-icons";
 import { ShareSpotModal } from "./ShareSpotModal";
 import { Doc } from "../../../convex/_generated/dataModel";
@@ -32,6 +33,7 @@ import NumberFlow from "@number-flow/react";
 import { toast } from "sonner";
 import { ConvexError } from "convex/values";
 import { cn } from "@/lib/utils";
+import { Badge } from "../ui/badge";
 
 type SpotDetailsTriggerProps = {
    children: React.ReactNode;
@@ -61,6 +63,8 @@ export function SpotDetailsTrigger({
       useQuery(api.spots.downvotes, {
          spotId: spot._id,
       }) ?? [];
+
+   const isVerified = upvotes.length - downvotes.length >= 5;
 
    const deleteCommentMutation = useMutation(api.spots.deleteComment);
    const upvoteMutation = useMutation(api.spots.upvote);
@@ -145,6 +149,15 @@ export function SpotDetailsTrigger({
                <div className="mt-3">
                   <SheetTitle className="text-xl font-semibold">
                      {spot.name ?? "Amala Spot"}
+                     {isVerified && (
+                        <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/30 ml-2">
+                           <HugeiconsIcon
+                              icon={CheckmarkBadge01Icon}
+                              className="size-4 "
+                           />
+                           Verified
+                        </Badge>
+                     )}
                   </SheetTitle>
                   <p className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
                      <HugeiconsIcon icon={Location01Icon} className="size-4" />
@@ -201,7 +214,9 @@ export function SpotDetailsTrigger({
                               "fill-emerald-500":
                                  user &&
                                  bookmarks?.some(
-                                    (bookmark) => bookmark.userId === user?.id && bookmark.spotId === spot._id
+                                    (bookmark) =>
+                                       bookmark.userId === user?.id &&
+                                       bookmark.spotId === spot._id
                                  ),
                            })}
                         />
