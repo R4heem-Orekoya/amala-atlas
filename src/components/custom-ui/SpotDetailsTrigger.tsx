@@ -23,11 +23,13 @@ import {
 } from "@hugeicons/core-free-icons";
 import { ShareSpotModal } from "./ShareSpotModal";
 import { Doc } from "../../../convex/_generated/dataModel";
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import AddCommentForm from "../add-comment-form";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { useUser } from "@clerk/nextjs";
+import { toast } from "sonner";
+import { ConvexError } from "convex/values";
 
 type SpotDetailsTriggerProps = {
    children: React.ReactNode;
@@ -55,6 +57,18 @@ export function SpotDetailsTrigger({
       useQuery(api.spots.downvotes, {
          spotId: spot._id,
       }) ?? [];
+      
+   const deleteCommentMutation = useMutation(api.spots.deleteComment)
+   
+   async function deleteComment(commentId: Doc<"comments">["_id"]) {
+      try {
+         void deleteCommentMutation({
+            commentId
+         })
+      } catch (error) {
+         toast.error(error instanceof ConvexError ? error.message : "Couldn't delete comment!")
+      }
+   }
 
    return (
       <Sheet>
@@ -171,7 +185,9 @@ export function SpotDetailsTrigger({
                               </div>
 
                               {user && c.userId === user.id && (
-                                 <button className="opacity-0 group-hover:opacity-100 [&_svg]:size-4 text-destructive cursor-pointer">
+                                 <button
+                                    onClick={() => void deleteComment(c._id)} 
+                                    className="opacity-0 group-hover:opacity-100 [&_svg]:size-4 text-destructive cursor-pointer">
                                     <HugeiconsIcon
                                        icon={Delete02Icon}
                                        strokeWidth={1.5}

@@ -1,7 +1,7 @@
 import { mutation, query } from "./_generated/server";
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { haversine } from "./utils";
-import { getCurrentUser, getCurrentUserOrThrow } from "./users";
+import { getCurrentUserOrThrow } from "./users";
 
 export const nearby = query({
    args: {
@@ -60,14 +60,7 @@ export const addComment = mutation({
       text: v.string(),
    },
    handler: async (ctx, { spotId, text }) => {
-      const user = await getCurrentUser(ctx);
-
-      if (!user) {
-         return {
-            error: true,
-            message: "You are not signed in!",
-         };
-      }
+      const user = await getCurrentUserOrThrow(ctx);
 
       const comment = await ctx.db.insert("comments", {
          spotId,
@@ -75,10 +68,31 @@ export const addComment = mutation({
          userId: user.externalId,
       });
 
-      return {
-         error: false,
-         comment,
-      };
+      return comment;
+   },
+});
+
+export const deleteComment = mutation({
+   args: {
+      commentId: v.id("comments"),
+   },
+   handler: async (ctx, { commentId }) => {
+      const user = await getCurrentUserOrThrow(ctx);
+
+      const commentToDelete = await ctx.db
+         .query("comments")
+         .filter((q) => q.eq(q.field("_id"), commentId))
+         .first();
+
+      if (!commentToDelete) {
+         throw new ConvexError("Comment does not exist!");
+      }
+
+      if (commentToDelete.userId !== user.externalId) {
+         throw new ConvexError("You are unauthorized to delete this comment!");
+      }
+
+      await ctx.db.delete(commentId);
    },
 });
 

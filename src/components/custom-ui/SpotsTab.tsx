@@ -3,7 +3,6 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SpotCard from "./SpotCard";
-import { Spots } from "@/types";
 import { Doc } from "../../../convex/_generated/dataModel";
 
 type SpotsTabsProps = {

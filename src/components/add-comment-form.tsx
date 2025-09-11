@@ -11,6 +11,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Comment, TComment } from "@/validators/comment";
 import { Doc } from "../../convex/_generated/dataModel";
 import { toast } from "sonner";
+import { ConvexError } from "convex/values";
 
 interface AddCommentFormProps {
    spotId: Doc<"spots">["_id"];
@@ -34,14 +35,11 @@ export default function AddCommentForm({ spotId }: AddCommentFormProps) {
             spotId,
          });
 
-         if (res.error) {
-            toast.error(res.message);
-            return;
-         }
-
          reset();
       } catch (error) {
-         toast.error("Something went wrong!");
+         toast.error(
+            error instanceof ConvexError ? error.message : "Something went wrong!"
+         );
       }
    }
 
