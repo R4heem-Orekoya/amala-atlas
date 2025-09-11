@@ -8,6 +8,7 @@ export default defineSchema({
       imageUrl: v.optional(v.string()),
       externalId: v.string()
    }).index("byExternalId", ["externalId"]),
+   
    spots: defineTable({
       userId: v.optional(v.string()),
       name: v.string(),
