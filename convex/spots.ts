@@ -149,7 +149,7 @@ export const upvote = mutation({
 
 export const downvote = mutation({
    args: {
-      spotId: v.id("spots"), // fix: it should be "spots", not "downvotes"
+      spotId: v.id("spots"),
    },
    handler: async (ctx, { spotId }) => {
       const user = await getCurrentUserOrThrow(ctx);
@@ -195,5 +195,54 @@ export const downvotes = query({
          .collect();
 
       return downvotes;
+   },
+});
+
+export const bookmark = mutation({
+   args: {
+      spotId: v.id("spots"),
+   },
+   handler: async (ctx, { spotId }) => {
+      const user = await getCurrentUserOrThrow(ctx);
+
+      const existingBookmark = await ctx.db
+         .query("bookmarks")
+         .withIndex("by_spot_user", (q) =>
+            q.eq("spotId", spotId).eq("userId", user.externalId)
+         )
+         .first();
+
+      if (existingBookmark) {
+         await ctx.db.delete(existingBookmark._id);
+         return;
+      }
+
+      await ctx.db.insert("bookmarks", {
+         spotId,
+         userId: user.externalId,
+      });
+   },
+});
+
+export const bookmarks = query({
+   handler: async (ctx) => {
+      const user = await getCurrentUserOrThrow(ctx);
+
+      const bookmarks = await ctx.db
+         .query("bookmarks")
+         .withIndex("by_user", (q) => q.eq("userId", user.externalId))
+         .collect();
+
+      const bookmarksWithSpots = await Promise.all(
+         bookmarks.map(async (bookmark) => {
+            const spot = await ctx.db.get(bookmark.spotId);
+            return {
+               ...bookmark,
+               spot,
+            };
+         })
+      );
+
+      return bookmarksWithSpots;
    },
 });

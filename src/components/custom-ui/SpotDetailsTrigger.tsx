@@ -32,6 +32,7 @@ import NumberFlow from "@number-flow/react";
 import { toast } from "sonner";
 import { ConvexError } from "convex/values";
 import { cn } from "@/lib/utils";
+import { error } from "console";
 
 type SpotDetailsTriggerProps = {
    children: React.ReactNode;
@@ -43,6 +44,8 @@ export function SpotDetailsTrigger({
    spot,
 }: SpotDetailsTriggerProps) {
    const { user } = useUser();
+
+   const bookmarks = useQuery(api.spots.bookmarks);
 
    const comments =
       useQuery(api.spots.comments, {
@@ -63,47 +66,54 @@ export function SpotDetailsTrigger({
    const deleteCommentMutation = useMutation(api.spots.deleteComment);
    const upvoteMutation = useMutation(api.spots.upvote);
    const downvoteMutation = useMutation(api.spots.downvote);
+   const bookmarkMutation = useMutation(api.spots.bookmark);
 
    function deleteComment(commentId: Doc<"comments">["_id"]) {
-      try {
-         void deleteCommentMutation({
-            commentId,
-         });
-      } catch (error) {
+      void deleteCommentMutation({
+         commentId,
+      }).catch((error) => {
          toast.error(
             error instanceof ConvexError
                ? error.message
                : "Couldn't delete comment!"
          );
-      }
+      });
    }
 
    function upvote(spotId: Doc<"spots">["_id"]) {
-      try {
-         void upvoteMutation({
-            spotId,
-         });
-      } catch (error) {
+      void upvoteMutation({
+         spotId,
+      }).catch((error) => {
          toast.error(
             error instanceof ConvexError
                ? error.message
                : "Couldn't upvote spot!"
          );
-      }
+      });
    }
 
    function downvote(spotId: Doc<"spots">["_id"]) {
-      try {
-         void downvoteMutation({
-            spotId,
-         });
-      } catch (error) {
+      void downvoteMutation({
+         spotId,
+      }).catch((error) => {
          toast.error(
             error instanceof ConvexError
                ? error.message
                : "Couldn't downvote spot!"
          );
-      }
+      });
+   }
+
+   function addToBookmark(spotId: Doc<"spots">["_id"]) {
+      void bookmarkMutation({
+         spotId,
+      }).catch((error) => {
+         toast.error(
+            error instanceof ConvexError
+               ? error.message
+               : "Couldn't bookmark spot!"
+         );
+      });
    }
 
    return (
@@ -181,8 +191,21 @@ export function SpotDetailsTrigger({
                   </div>
 
                   <div className="flex gap-2">
-                     <Button variant="outline" size="icon">
-                        <HugeiconsIcon icon={Bookmark02Icon} />
+                     <Button
+                        onClick={() => addToBookmark(spot._id)}
+                        variant="outline"
+                        size="icon"
+                     >
+                        <HugeiconsIcon
+                           icon={Bookmark02Icon}
+                           className={cn({
+                              "fill-emerald-500":
+                                 user &&
+                                 bookmarks?.some(
+                                    (bookmark) => bookmark.userId === user?.id && bookmark.spotId === spot._id
+                                 ),
+                           })}
+                        />
                      </Button>
                      <ShareSpotModal spot={spot}>
                         <Button variant="outline" size="icon">

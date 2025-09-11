@@ -10,11 +10,9 @@ import {
    Location01Icon,
    Navigation03Icon,
    InformationCircleIcon,
-   RulerIcon
+   RulerIcon,
 } from "@hugeicons/core-free-icons";
-import {
-   EllipsisVertical,
-} from "lucide-react";
+import { EllipsisVertical } from "lucide-react";
 import {
    DropdownMenu,
    DropdownMenuContent,
@@ -62,17 +60,24 @@ export default function SpotCard({ spot }: SpotCardProps) {
                      />{" "}
                      Bookmark
                   </DropdownMenuItem>
-                     <ShareSpotModal spot={spot}>
-                        <Button variant="secondary" className="justify-start w-full bg-transparent shadow-none border-none cursor-pointer">
-                           <HugeiconsIcon
-                              icon={Share08Icon}
-                              className="mr-2 size-4 text-green-500"
-                           />{" "}
-                           Share
-                        </Button>
-                     </ShareSpotModal>
+                  <ShareSpotModal spot={spot}>
+                     <Button
+                        variant="secondary"
+                        className="justify-start w-full bg-transparent shadow-none border-none cursor-pointer"
+                     >
+                        <HugeiconsIcon
+                           icon={Share08Icon}
+                           className="mr-2 size-4 text-green-500"
+                        />{" "}
+                        Share
+                     </Button>
+                  </ShareSpotModal>
                   <DropdownMenuItem className="cursor-pointer">
-                     <HugeiconsIcon icon={Location01Icon} className="mr-2 size-4 text-purple-500" /> Get Directions
+                     <HugeiconsIcon
+                        icon={Location01Icon}
+                        className="mr-2 size-4 text-purple-500"
+                     />{" "}
+                     Get Directions
                   </DropdownMenuItem>
                </DropdownMenuContent>
             </DropdownMenu>
@@ -80,7 +85,10 @@ export default function SpotCard({ spot }: SpotCardProps) {
 
          <div className="py-6 text-muted-foreground">
             <div className="flex items-center gap-2 text-sm">
-               <HugeiconsIcon icon={Location01Icon} className="size-4 shrink-0" />
+               <HugeiconsIcon
+                  icon={Location01Icon}
+                  className="size-4 shrink-0"
+               />
                <span>{spot.address}</span>
             </div>
 
@@ -94,14 +102,19 @@ export default function SpotCard({ spot }: SpotCardProps) {
 
          <div className="flex gap-2">
             <Button className="flex-1 flex items-center gap-2">
-               <HugeiconsIcon icon={Navigation03Icon} className="size-4" /> Navigate
+               <HugeiconsIcon icon={Navigation03Icon} className="size-4" />{" "}
+               Navigate
             </Button>
             <SpotDetailsTrigger spot={spot}>
                <Button
                   variant="outline"
                   className="flex-1 flex items-center gap-2"
                >
-                  <HugeiconsIcon icon={InformationCircleIcon} className="size-4" /> Details
+                  <HugeiconsIcon
+                     icon={InformationCircleIcon}
+                     className="size-4"
+                  />{" "}
+                  Details
                </Button>
             </SpotDetailsTrigger>
          </div>

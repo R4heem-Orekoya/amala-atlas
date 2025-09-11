@@ -67,7 +67,7 @@ export default function Page() {
             </div> */}
           </div>
           <SpotsTabs
-            data={spots}
+            nearbySpots={spots!}
             isLoading={spots === undefined}
           />
         </SideContent>

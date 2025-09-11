@@ -6,7 +6,7 @@ export default defineSchema({
       name: v.string(),
       email: v.string(),
       imageUrl: v.optional(v.string()),
-      externalId: v.string()
+      externalId: v.string(),
    }).index("byExternalId", ["externalId"]),
    spots: defineTable({
       userId: v.optional(v.string()),
@@ -52,6 +52,14 @@ export default defineSchema({
    })
       .index("by_spot", ["spotId"])
       .index("by_user", ["userId"]),
+
+   bookmarks: defineTable({
+      spotId: v.id("spots"),
+      userId: v.string(),
+   })
+      .index("by_spot", ["spotId"])
+      .index("by_user", ["userId"])
+      .index("by_spot_user", ["spotId", "userId"]),
 
    images: defineTable({
       spotId: v.id("spots"),
