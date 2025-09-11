@@ -101,9 +101,86 @@ export const upvotes = query({
       spotId: v.id("spots"),
    },
    handler: async ({ db }, { spotId }) => {
-      const upvotes = await db.query("upvotes").collect();
+      const upvotes = await db
+         .query("upvotes")
+         .withIndex("by_spot", (q) => q.eq("spotId", spotId))
+         .collect();
 
       return upvotes;
+   },
+});
+
+export const upvote = mutation({
+   args: {
+      spotId: v.id("spots"),
+   },
+   handler: async (ctx, { spotId }) => {
+      const user = await getCurrentUserOrThrow(ctx);
+
+      const existingUpvote = await ctx.db
+         .query("upvotes")
+         .withIndex("by_spot_user", (q) =>
+            q.eq("spotId", spotId).eq("userId", user.externalId)
+         )
+         .first();
+
+      if (existingUpvote) {
+         await ctx.db.delete(existingUpvote._id);
+         return;
+      }
+
+      const existingDownvote = await ctx.db
+         .query("downvotes")
+         .withIndex("by_spot_user", (q) =>
+            q.eq("spotId", spotId).eq("userId", user.externalId)
+         )
+         .first();
+
+      if (existingDownvote) {
+         await ctx.db.delete(existingDownvote._id);
+      }
+
+      await ctx.db.insert("upvotes", {
+         spotId,
+         userId: user.externalId,
+      });
+   },
+});
+
+export const downvote = mutation({
+   args: {
+      spotId: v.id("spots"), // fix: it should be "spots", not "downvotes"
+   },
+   handler: async (ctx, { spotId }) => {
+      const user = await getCurrentUserOrThrow(ctx);
+
+      const existingDownvote = await ctx.db
+         .query("downvotes")
+         .withIndex("by_spot_user", (q) =>
+            q.eq("spotId", spotId).eq("userId", user.externalId)
+         )
+         .first();
+
+      if (existingDownvote) {
+         await ctx.db.delete(existingDownvote._id);
+         return;
+      }
+
+      const existingUpvote = await ctx.db
+         .query("upvotes")
+         .withIndex("by_spot_user", (q) =>
+            q.eq("spotId", spotId).eq("userId", user.externalId)
+         )
+         .first();
+
+      if (existingUpvote) {
+         await ctx.db.delete(existingUpvote._id);
+      }
+
+      await ctx.db.insert("downvotes", {
+         spotId,
+         userId: user.externalId,
+      });
    },
 });
 
@@ -112,7 +189,10 @@ export const downvotes = query({
       spotId: v.id("spots"),
    },
    handler: async ({ db }, { spotId }) => {
-      const downvotes = await db.query("downvotes").collect();
+      const downvotes = await db
+         .query("downvotes")
+         .withIndex("by_spot", (q) => q.eq("spotId", spotId))
+         .collect();
 
       return downvotes;
    },

@@ -28,8 +28,10 @@ import { api } from "../../../convex/_generated/api";
 import AddCommentForm from "../add-comment-form";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { useUser } from "@clerk/nextjs";
+import NumberFlow from "@number-flow/react";
 import { toast } from "sonner";
 import { ConvexError } from "convex/values";
+import { cn } from "@/lib/utils";
 
 type SpotDetailsTriggerProps = {
    children: React.ReactNode;
@@ -57,16 +59,50 @@ export function SpotDetailsTrigger({
       useQuery(api.spots.downvotes, {
          spotId: spot._id,
       }) ?? [];
-      
-   const deleteCommentMutation = useMutation(api.spots.deleteComment)
-   
-   async function deleteComment(commentId: Doc<"comments">["_id"]) {
+
+   const deleteCommentMutation = useMutation(api.spots.deleteComment);
+   const upvoteMutation = useMutation(api.spots.upvote);
+   const downvoteMutation = useMutation(api.spots.downvote);
+
+   function deleteComment(commentId: Doc<"comments">["_id"]) {
       try {
          void deleteCommentMutation({
-            commentId
-         })
+            commentId,
+         });
       } catch (error) {
-         toast.error(error instanceof ConvexError ? error.message : "Couldn't delete comment!")
+         toast.error(
+            error instanceof ConvexError
+               ? error.message
+               : "Couldn't delete comment!"
+         );
+      }
+   }
+
+   function upvote(spotId: Doc<"spots">["_id"]) {
+      try {
+         void upvoteMutation({
+            spotId,
+         });
+      } catch (error) {
+         toast.error(
+            error instanceof ConvexError
+               ? error.message
+               : "Couldn't upvote spot!"
+         );
+      }
+   }
+
+   function downvote(spotId: Doc<"spots">["_id"]) {
+      try {
+         void downvoteMutation({
+            spotId,
+         });
+      } catch (error) {
+         toast.error(
+            error instanceof ConvexError
+               ? error.message
+               : "Couldn't downvote spot!"
+         );
       }
    }
 
@@ -102,7 +138,7 @@ export function SpotDetailsTrigger({
                      {spot.name ?? "Amala Spot"}
                   </SheetTitle>
                   <p className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-                     <HugeiconsIcon icon={Location01Icon} />
+                     <HugeiconsIcon icon={Location01Icon} className="size-4" />
                      {spot.address ?? "Unknown address"}
                   </p>
                </div>
@@ -110,18 +146,37 @@ export function SpotDetailsTrigger({
                   <div className="flex gap-2">
                      <Button
                         variant="outline"
-                        onClick={() => {}}
+                        onClick={() => upvote(spot._id)}
                         className="flex items-center gap-1"
                      >
-                        <HugeiconsIcon icon={ThumbsUpIcon} /> {upvotes.length}
+                        <HugeiconsIcon
+                           icon={ThumbsUpIcon}
+                           className={cn({
+                              "fill-emerald-500":
+                                 user &&
+                                 upvotes.some(
+                                    (upvote) => upvote.userId === user?.id
+                                 ),
+                           })}
+                        />
+                        <NumberFlow value={upvotes.length} />
                      </Button>
                      <Button
                         variant="outline"
-                        onClick={() => {}}
+                        onClick={() => downvote(spot._id)}
                         className="flex items-center gap-1"
                      >
-                        <HugeiconsIcon icon={ThumbsDownIcon} />{" "}
-                        {downvotes.length}
+                        <HugeiconsIcon
+                           icon={ThumbsDownIcon}
+                           className={cn({
+                              "fill-rose-500":
+                                 user &&
+                                 downvotes.some(
+                                    (downvote) => downvote.userId === user?.id
+                                 ),
+                           })}
+                        />
+                        <NumberFlow value={downvotes.length} />
                      </Button>
                   </div>
 
@@ -186,8 +241,9 @@ export function SpotDetailsTrigger({
 
                               {user && c.userId === user.id && (
                                  <button
-                                    onClick={() => void deleteComment(c._id)} 
-                                    className="opacity-0 group-hover:opacity-100 [&_svg]:size-4 text-destructive cursor-pointer">
+                                    onClick={() => deleteComment(c._id)}
+                                    className="opacity-0 group-hover:opacity-100 [&_svg]:size-4 text-destructive cursor-pointer"
+                                 >
                                     <HugeiconsIcon
                                        icon={Delete02Icon}
                                        strokeWidth={1.5}
