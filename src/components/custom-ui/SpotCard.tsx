@@ -46,7 +46,7 @@ export default function SpotCard({ spot, className }: SpotCardProps) {
          spotId: spot._id,
       }) ?? [];
 
-   const isVerified = upvotes.length - downvotes.length >= 1;
+   const isVerified = upvotes.length - downvotes.length >= 5;
 
    return (
       <div className={cn("px-4 py-5 mt-4 border rounded-lg", className)}>
