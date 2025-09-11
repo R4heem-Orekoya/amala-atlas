@@ -49,7 +49,6 @@ export default function RootLayout({
             <ConvexClientProvider>
                <QueryProvider>
                   <body className={`${dmSans.variable} antialiased`}>
-                     <Navbar />
                      {children}
                      <Toaster
                         richColors
