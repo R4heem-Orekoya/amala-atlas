@@ -53,6 +53,7 @@ Recommended tools:
 - A Mapbox (or Google Maps) API key
 
 ### Setup
+
 ```bash
 # Clone repo
 git clone https://github.com/R4heem-Orekoya/amala-atlas
@@ -61,12 +62,27 @@ cd amala-atlas
 # Install dependencies
 pnpm install
 
+# Copy the example environment file
+cp .env.template .env.local
+
+# Fill in your environment variables in .env.local
+# Example:
+CONVEX_DEPLOYMENT=
+NEXT_PUBLIC_CONVEX_URL=
+
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
+CLERK_SECRET_KEY=
+CLERK_JWT_ISSUER_DOMAIN=
+
+NEXT_PUBLIC_MAPBOX_TOKEN=
+FOURSQUARE_API_KEY=
+
+# Start Convex
+npx convex dev
+
 # Start dev server
 pnpm run dev
-
-Then open `http://localhost:3000` in your browser.
 ```
-
 ---
 
 ## 📹 Demo
