@@ -4,12 +4,14 @@ import { useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-import { Send } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { SentIcon } from "@hugeicons/core-free-icons";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Comment, TComment } from "@/validators/comment";
 import { Doc } from "../../convex/_generated/dataModel";
 import { toast } from "sonner";
+import { ConvexError } from "convex/values";
 
 interface AddCommentFormProps {
    spotId: Doc<"spots">["_id"];
@@ -21,26 +23,23 @@ export default function AddCommentForm({ spotId }: AddCommentFormProps) {
       register,
       reset,
       handleSubmit,
-      formState: { errors, isSubmitting },
+      formState: { errors },
    } = useForm<TComment>({
       resolver: zodResolver(Comment),
    });
 
    async function onsubmit(data: TComment) {
       try {
-         const res = await addNewComment({
+         await addNewComment({
             text: data.text,
             spotId,
          });
 
-         if (res.error) {
-            toast.error(res.message);
-            return;
-         }
-
          reset();
       } catch (error) {
-         toast.error("Something went wrong!");
+         toast.error(
+            error instanceof ConvexError ? error.message : "Something went wrong!"
+         );
       }
    }
 
@@ -56,7 +55,7 @@ export default function AddCommentForm({ spotId }: AddCommentFormProps) {
             aria-invalid={!!errors.text}
          />
          <Button>
-            <Send className="w-4 h-4" />
+            <HugeiconsIcon icon={SentIcon} />
          </Button>
       </form>
    );

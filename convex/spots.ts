@@ -1,7 +1,7 @@
 import { mutation, query } from "./_generated/server";
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { haversine } from "./utils";
-import { getCurrentUser, getCurrentUserOrThrow } from "./users";
+import { getCurrentUserOrThrow } from "./users";
 
 export const nearby = query({
    args: {
@@ -60,14 +60,7 @@ export const addComment = mutation({
       text: v.string(),
    },
    handler: async (ctx, { spotId, text }) => {
-      const user = await getCurrentUser(ctx);
-
-      if (!user) {
-         return {
-            error: true,
-            message: "You are not signed in!",
-         };
-      }
+      const user = await getCurrentUserOrThrow(ctx);
 
       const comment = await ctx.db.insert("comments", {
          spotId,
@@ -75,10 +68,31 @@ export const addComment = mutation({
          userId: user.externalId,
       });
 
-      return {
-         error: false,
-         comment,
-      };
+      return comment;
+   },
+});
+
+export const deleteComment = mutation({
+   args: {
+      commentId: v.id("comments"),
+   },
+   handler: async (ctx, { commentId }) => {
+      const user = await getCurrentUserOrThrow(ctx);
+
+      const commentToDelete = await ctx.db
+         .query("comments")
+         .filter((q) => q.eq(q.field("_id"), commentId))
+         .first();
+
+      if (!commentToDelete) {
+         throw new ConvexError("Comment does not exist!");
+      }
+
+      if (commentToDelete.userId !== user.externalId) {
+         throw new ConvexError("You are unauthorized to delete this comment!");
+      }
+
+      await ctx.db.delete(commentId);
    },
 });
 
@@ -87,9 +101,86 @@ export const upvotes = query({
       spotId: v.id("spots"),
    },
    handler: async ({ db }, { spotId }) => {
-      const upvotes = await db.query("upvotes").collect();
+      const upvotes = await db
+         .query("upvotes")
+         .withIndex("by_spot", (q) => q.eq("spotId", spotId))
+         .collect();
 
       return upvotes;
+   },
+});
+
+export const upvote = mutation({
+   args: {
+      spotId: v.id("spots"),
+   },
+   handler: async (ctx, { spotId }) => {
+      const user = await getCurrentUserOrThrow(ctx);
+
+      const existingUpvote = await ctx.db
+         .query("upvotes")
+         .withIndex("by_spot_user", (q) =>
+            q.eq("spotId", spotId).eq("userId", user.externalId)
+         )
+         .first();
+
+      if (existingUpvote) {
+         await ctx.db.delete(existingUpvote._id);
+         return;
+      }
+
+      const existingDownvote = await ctx.db
+         .query("downvotes")
+         .withIndex("by_spot_user", (q) =>
+            q.eq("spotId", spotId).eq("userId", user.externalId)
+         )
+         .first();
+
+      if (existingDownvote) {
+         await ctx.db.delete(existingDownvote._id);
+      }
+
+      await ctx.db.insert("upvotes", {
+         spotId,
+         userId: user.externalId,
+      });
+   },
+});
+
+export const downvote = mutation({
+   args: {
+      spotId: v.id("spots"),
+   },
+   handler: async (ctx, { spotId }) => {
+      const user = await getCurrentUserOrThrow(ctx);
+
+      const existingDownvote = await ctx.db
+         .query("downvotes")
+         .withIndex("by_spot_user", (q) =>
+            q.eq("spotId", spotId).eq("userId", user.externalId)
+         )
+         .first();
+
+      if (existingDownvote) {
+         await ctx.db.delete(existingDownvote._id);
+         return;
+      }
+
+      const existingUpvote = await ctx.db
+         .query("upvotes")
+         .withIndex("by_spot_user", (q) =>
+            q.eq("spotId", spotId).eq("userId", user.externalId)
+         )
+         .first();
+
+      if (existingUpvote) {
+         await ctx.db.delete(existingUpvote._id);
+      }
+
+      await ctx.db.insert("downvotes", {
+         spotId,
+         userId: user.externalId,
+      });
    },
 });
 
@@ -98,8 +189,60 @@ export const downvotes = query({
       spotId: v.id("spots"),
    },
    handler: async ({ db }, { spotId }) => {
-      const downvotes = await db.query("downvotes").collect();
+      const downvotes = await db
+         .query("downvotes")
+         .withIndex("by_spot", (q) => q.eq("spotId", spotId))
+         .collect();
 
       return downvotes;
+   },
+});
+
+export const bookmark = mutation({
+   args: {
+      spotId: v.id("spots"),
+   },
+   handler: async (ctx, { spotId }) => {
+      const user = await getCurrentUserOrThrow(ctx);
+
+      const existingBookmark = await ctx.db
+         .query("bookmarks")
+         .withIndex("by_spot_user", (q) =>
+            q.eq("spotId", spotId).eq("userId", user.externalId)
+         )
+         .first();
+
+      if (existingBookmark) {
+         await ctx.db.delete(existingBookmark._id);
+         return;
+      }
+
+      await ctx.db.insert("bookmarks", {
+         spotId,
+         userId: user.externalId,
+      });
+   },
+});
+
+export const bookmarks = query({
+   handler: async (ctx) => {
+      const user = await getCurrentUserOrThrow(ctx);
+
+      const bookmarks = await ctx.db
+         .query("bookmarks")
+         .withIndex("by_user", (q) => q.eq("userId", user.externalId))
+         .collect();
+
+      const bookmarksWithSpots = await Promise.all(
+         bookmarks.map(async (bookmark) => {
+            const spot = await ctx.db.get(bookmark.spotId);
+            return {
+               ...bookmark,
+               spot,
+            };
+         })
+      );
+
+      return bookmarksWithSpots;
    },
 });

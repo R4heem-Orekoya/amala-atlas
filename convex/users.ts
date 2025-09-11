@@ -1,6 +1,6 @@
 import { internalMutation, query, QueryCtx } from "./_generated/server";
 import { UserJSON } from "@clerk/backend";
-import { v, Validator } from "convex/values";
+import { ConvexError, v, Validator } from "convex/values";
 
 export const current = query({
    args: {},
@@ -45,7 +45,7 @@ export const deleteFromClerk = internalMutation({
 
 export async function getCurrentUserOrThrow(ctx: QueryCtx) {
    const userRecord = await getCurrentUser(ctx);
-   if (!userRecord) throw new Error("Can't get current user");
+   if (!userRecord) throw new ConvexError("Can't get current user");
    return userRecord;
 }
 

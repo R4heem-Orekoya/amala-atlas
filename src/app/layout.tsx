@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Geist } from "next/font/google";
 import "./globals.css";
 import QueryProvider from "@/providers/query";
 import { ClerkProvider } from "@clerk/nextjs";
 import ConvexClientProvider from "@/providers/convex";
-import Navbar from "@/components/navbar";
 import { Toaster } from "@/components/ui/sonner";
 
-const dmSans = Inter({
+const dmSans = Geist({
   variable: "--font-dm-sans",
   subsets: ["latin"],
 });
