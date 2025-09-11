@@ -4,7 +4,8 @@ import { useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-import { Send } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { SentIcon } from "@hugeicons/core-free-icons";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Comment, TComment } from "@/validators/comment";
@@ -56,7 +57,7 @@ export default function AddCommentForm({ spotId }: AddCommentFormProps) {
             aria-invalid={!!errors.text}
          />
          <Button>
-            <Send className="w-4 h-4" />
+            <HugeiconsIcon icon={SentIcon} />
          </Button>
       </form>
    );

@@ -1,7 +1,6 @@
 "use client";
 
 import { useRef } from "react";
-import { useQuery } from "@tanstack/react-query";
 import SideContent from "@/components/custom-ui/SideContent";
 import MapView from "@/components/custom-ui/MapView";
 import useLocation from "@/hooks/use-location";
@@ -10,6 +9,8 @@ import { Input } from "@/components/ui/input";
 import { ArrowRightIcon, MapPinned, SearchIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import SpotsTabs from "@/components/custom-ui/SpotsTab";
+import { useQuery } from "convex/react";
+import { api } from "../../../../convex/_generated/api";
 
 export default function Page() {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
@@ -18,14 +19,10 @@ export default function Page() {
   const lng = location?.longitude ?? 3.3792;
   const lat = location?.latitude ?? 6.5244;
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["amala-spots", lat, lng],
-    queryFn: async () => {
-      const res = await fetch(`/api/amala-spots?lat=${lat}&lng=${lng}`);
-      const data = await res.json();
-      return data as Spots;
-    },
-    enabled: !loading && !!lat && !!lng,
+  const spots = useQuery(api.spots.nearby, {
+   lat,
+   lng,
+   radiusKm: 8000
   });
 
   return (
@@ -51,7 +48,7 @@ export default function Page() {
                 <ArrowRightIcon size={16} />
               </button>
             </div>
-            <div className="flex items-center justify-between text-sm mt-2 p-2 rounded-md border bg-muted/30">
+            {/* <div className="flex items-center justify-between text-sm mt-2 p-2 rounded-md border bg-muted/30">
               {data &&
               data.context?.geo_bounds.circle?.center?.latitude === lat ? (
                 <span className="text-muted-foreground">
@@ -67,12 +64,11 @@ export default function Page() {
                   Use Current Location
                 </Button>
               )}
-            </div>
+            </div> */}
           </div>
           <SpotsTabs
-            data={data}
-            isLoading={isLoading}
-            error={error}
+            data={spots}
+            isLoading={spots === undefined}
           />
         </SideContent>
       </div>
