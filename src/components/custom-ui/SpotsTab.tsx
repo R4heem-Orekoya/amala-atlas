@@ -12,7 +12,10 @@ type SpotsTabsProps = {
    isLoading: boolean;
 };
 
-export default function SpotsTabs({ nearbySpots, isLoading }: SpotsTabsProps) {
+export default function SpotsTabs({
+   nearbySpots,
+   isLoading,
+}: SpotsTabsProps) {
    const bookmarks = useQuery(api.spots.bookmarks);
 
    return (
@@ -29,7 +32,10 @@ export default function SpotsTabs({ nearbySpots, isLoading }: SpotsTabsProps) {
             <TabsContent value="verified" className="flex flex-col flex-1">
                {isLoading && <p>Loading spots...</p>}
                {nearbySpots?.map((spot) => (
-                  <SpotCard key={spot._id} spot={spot} />
+                  <SpotCard
+                     key={spot._id}
+                     spot={spot}
+                  />
                ))}
             </TabsContent>
 
@@ -39,7 +45,10 @@ export default function SpotsTabs({ nearbySpots, isLoading }: SpotsTabsProps) {
                   bookmarks?.map((bookmark) => {
                      return (
                         bookmark.spot && (
-                           <SpotCard key={bookmark._id} spot={bookmark.spot} />
+                           <SpotCard
+                              key={bookmark._id}
+                              spot={bookmark.spot}
+                           />
                         )
                      );
                   })}

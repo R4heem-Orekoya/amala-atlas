@@ -2,32 +2,29 @@
 
 import MapStyles from "@/components/map/styles";
 import MapControls from "@/components/map/controls";
-import MapProvider from "@/providers/mapbox";
+import { LocationMarker } from "../map-location-marker";
+import { useMap } from "@/context/map";
 
 type MapViewProps = {
-  mapContainerRef: React.RefObject<HTMLDivElement | null>;
-  lng: number;
-  lat: number;
+   lng: number;
+   lat: number;
+   mapContainerRef: React.RefObject<HTMLDivElement | null>;
 };
-export default function MapView({ mapContainerRef, lng, lat }: MapViewProps) {
-  return (
-    <div className="sticky top-6  h-[calc(100vh-48px)]  border rounded-lg overflow-hidden">
-      <div
-        id="map-container"
-        ref={mapContainerRef}
-        className="absolute inset-0 h-full w-full"
-      />
-      <MapProvider
-        mapContainerRef={mapContainerRef}
-        initialViewState={{
-          longitude: lng,
-          latitude: lat,
-          zoom: 14,
-        }}
-      >
-        <MapControls />
-        <MapStyles />
-      </MapProvider>
-    </div>
-  );
+export default function MapView({ mapContainerRef }: MapViewProps) {
+   const { selectedLocation } = useMap();
+
+   return (
+      <div className="sticky top-6  h-[calc(100vh-48px)]  border rounded-lg overflow-hidden">
+         <div
+            id="map-container"
+            ref={mapContainerRef}
+            className="absolute inset-0 h-full w-full"
+         />
+         {selectedLocation && <LocationMarker spot={selectedLocation} />}
+         {/* {spots && 
+            spots.map((spot) => <LocationMarker spot={spot} key={spot._id} />)} */}
+         <MapControls />
+         <MapStyles />
+      </div>
+   );
 }

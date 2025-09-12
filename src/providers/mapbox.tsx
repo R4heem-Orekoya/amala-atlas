@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { MapContext } from "@/context/map";
+import { Doc } from "../../convex/_generated/dataModel";
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN!;
 
@@ -22,13 +23,15 @@ export default function MapProvider({
    initialViewState,
    children,
 }: MapComponentProps) {
-   const map = useRef<mapboxgl.Map | null>(null);
+   const [selectedLocation, setSelectedLocation] =
+      useState<Doc<"spots"> | null>(null);
+   const mapRef = useRef<mapboxgl.Map | null>(null);
    const [loaded, setLoaded] = useState(false);
 
    useEffect(() => {
-      if (!mapContainerRef.current || map.current) return;
+      if (!mapContainerRef.current || mapRef.current) return;
 
-      map.current = new mapboxgl.Map({
+      mapRef.current = new mapboxgl.Map({
          container: mapContainerRef.current,
          style: "mapbox://styles/mapbox/standard",
          center: [initialViewState.longitude, initialViewState.latitude],
@@ -37,28 +40,27 @@ export default function MapProvider({
          logoPosition: "bottom-right",
       });
 
-      map.current.on("load", () => {
+      mapRef.current.on("load", () => {
          setLoaded(true);
       });
 
       return () => {
-         if (map.current) {
-            map.current.remove();
-            map.current = null;
-         }
+         mapRef.current?.remove();
+         mapRef.current = null;
       };
    }, [initialViewState, mapContainerRef]);
 
    return (
-      <div className="z-[1000]">
-         <MapContext.Provider value={{ map: map.current! }}>
-            {children}
-         </MapContext.Provider>
+      <MapContext.Provider
+         value={{ map: mapRef.current!, selectedLocation, setSelectedLocation }}
+      >
+         {children}
+
          {!loaded && (
             <div className="absolute inset-0 flex items-center justify-center bg-background/80 z-[1000]">
                <div className="text-lg font-medium">Loading map...</div>
             </div>
          )}
-      </div>
+      </MapContext.Provider>
    );
 }

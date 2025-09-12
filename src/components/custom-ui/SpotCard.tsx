@@ -8,9 +8,9 @@ import {
    Share08Icon,
    Flag01Icon,
    Location01Icon,
-   Navigation03Icon,
    InformationCircleIcon,
    RulerIcon,
+   CheckmarkBadge01Icon, // ✅ Verified badge icon
 } from "@hugeicons/core-free-icons";
 import { EllipsisVertical } from "lucide-react";
 import {
@@ -24,20 +24,49 @@ import {
 import { SpotDetailsTrigger } from "@/components/custom-ui/SpotDetailsTrigger";
 import { ShareSpotModal } from "./ShareSpotModal";
 import { Doc } from "../../../convex/_generated/dataModel";
+import NavigateButton from "../navigate-button";
+import { cn } from "@/lib/utils";
+import { useQuery } from "convex/react";
+import { api } from "../../../convex/_generated/api";
+import { Badge } from "../ui/badge";
 
 type SpotCardProps = {
    spot: Doc<"spots">;
+   className?: string;
 };
 
-export default function SpotCard({ spot }: SpotCardProps) {
+export default function SpotCard({ spot, className }: SpotCardProps) {
+   const upvotes =
+      useQuery(api.spots.upvotes, {
+         spotId: spot._id,
+      }) ?? [];
+
+   const downvotes =
+      useQuery(api.spots.downvotes, {
+         spotId: spot._id,
+      }) ?? [];
+
+   const isVerified = upvotes.length - downvotes.length >= 5;
+
    return (
-      <div className="px-4 py-5 mt-4 border rounded-lg">
+      <div className={cn("px-4 py-5 mt-4 border rounded-lg", className)}>
          <div className="flex justify-between items-start">
             <div className="flex items-center gap-2">
                <span className="grid place-items-center size-7 rounded-full bg-rose-500/20 text-rose-500">
                   <HugeiconsIcon icon={ChefHatIcon} className="size-4" />
                </span>
-               <h2 className="font-medium">{spot.name}</h2>
+               <h2 className="font-medium flex items-center gap-1">
+                  {spot.name}
+                  {isVerified && (
+                     <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/30">
+                        <HugeiconsIcon
+                           icon={CheckmarkBadge01Icon}
+                           className="size-4 "
+                        />
+                        Verified
+                     </Badge>
+                  )}
+               </h2>
             </div>
             <DropdownMenu>
                <DropdownMenuTrigger className="p-2 rounded-full hover:bg-muted transition cursor-pointer">
@@ -101,10 +130,7 @@ export default function SpotCard({ spot }: SpotCardProps) {
          </div>
 
          <div className="flex gap-2">
-            <Button className="flex-1 flex items-center gap-2">
-               <HugeiconsIcon icon={Navigation03Icon} className="size-4" />{" "}
-               Navigate
-            </Button>
+            <NavigateButton spot={spot} />
             <SpotDetailsTrigger spot={spot}>
                <Button
                   variant="outline"
