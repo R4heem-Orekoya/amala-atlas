@@ -61,17 +61,14 @@ export function AddSpotForm() {
   });
 
  async function onSubmit(data: FormValues) {
-   // tags array
    const tagsArray = data.tags ? data.tags.split(",").map((t) => t.trim()) : [];
 
    toast.promise(
      (async () => {
-       // Step 1: generate upload URLs for each image file
        const uploadUrls = await Promise.all(
          data.images.map(() => generateUploadUrl())
        );
 
-       // Step 2: upload each file to its URL
        const responses = await Promise.all(
          data.images.map((file, idx) => {
            return fetch(uploadUrls[idx], {
@@ -82,10 +79,8 @@ export function AddSpotForm() {
          })
        );
 
-       // Each response should contain a `storageId`
        const storageIds = responses.map((r) => r.storageId);
 
-       // Step 3: call convex mutation
        await addSpotWithImages({
          name: data.name,
          address: data.address,
@@ -98,7 +93,6 @@ export function AddSpotForm() {
          imageStorageIds: storageIds,
        });
 
-       // Reset form after success
        form.reset();
      })(),
      {
@@ -144,7 +138,6 @@ export function AddSpotForm() {
               )}
             />
 
-            {/* Name */}
             <FormField
               control={form.control}
               name="name"
@@ -165,7 +158,6 @@ export function AddSpotForm() {
               )}
             />
 
-            {/* Address */}
             <FormField
               control={form.control}
               name="address"
@@ -190,7 +182,6 @@ export function AddSpotForm() {
               )}
             />
 
-            {/* Lat / Lng + Category + Rating */}
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -301,7 +292,6 @@ export function AddSpotForm() {
               />
             </div>
 
-            {/* Description */}
             <FormField
               control={form.control}
               name="description"
@@ -324,7 +314,6 @@ export function AddSpotForm() {
               )}
             />
 
-            {/* Tags */}
             <FormField
               control={form.control}
               name="tags"
@@ -345,7 +334,6 @@ export function AddSpotForm() {
               )}
             />
 
-            {/* Submit */}
             <div className="flex flex-col gap-4 pt-4">
               <Button
                 type="submit"
