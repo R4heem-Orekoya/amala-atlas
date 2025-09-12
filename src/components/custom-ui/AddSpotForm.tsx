@@ -20,15 +20,14 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, MapPin, X } from "lucide-react";
-import { useState } from "react";
+import { useMutation } from "convex/react";
+import { Loader2, MapPin } from "lucide-react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
+import { api } from "../../../convex/_generated/api";
 import { ScrollArea } from "../ui/scroll-area";
 import { ImageDropzone } from "./ImageDropzone";
-import { useMutation } from "convex/react";
-import { api } from "../../../convex/_generated/api";
-import { toast } from "sonner";
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),

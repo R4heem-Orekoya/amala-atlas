@@ -7,6 +7,7 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 type ImageDropzoneProps = {
+  //eslint-disable-next-line
   field: ControllerRenderProps<any, any>;
   value: File[];
   onChange: (files: File[]) => void;

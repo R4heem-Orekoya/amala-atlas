@@ -1,5 +1,5 @@
-import { createContext, useContext, useState } from "react";
 import { type Map } from "mapbox-gl";
+import { createContext, useContext } from "react";
 import { Doc } from "../../convex/_generated/dataModel";
 
 interface MapContextType {

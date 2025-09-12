@@ -1,13 +1,12 @@
 "use client";
 
-import { HugeiconsIcon } from "@hugeicons/react";
-import { Navigation03Icon } from "@hugeicons/core-free-icons";
-import { Button } from "./ui/button";
-import { Doc } from "../../convex/_generated/dataModel";
-import { useState } from "react";
 import { useMap } from "@/context/map";
+import { Navigation03Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { useState } from "react";
 import { toast } from "sonner";
-import { LocationMarker } from "./location-marker";
+import { Doc } from "../../convex/_generated/dataModel";
+import { Button } from "./ui/button";
 
 interface NavigateButtonProps {
    spot: Doc<"spots">;
