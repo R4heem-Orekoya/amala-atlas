@@ -68,7 +68,7 @@ export default function SpotsTabs({ nearbySpots, isLoading }: SpotsTabsProps) {
           value="user"
           className="flex flex-col flex-1"
         >
-          {isLoading && <p>Loading bookmarked spots...</p>}
+          {isLoading && <p>Loading spots...</p>}
           {nearbySpots?.map(
             (spot) =>
                 <SpotCard

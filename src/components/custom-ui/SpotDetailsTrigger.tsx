@@ -57,7 +57,7 @@ export function SpotDetailsTrigger({
 }: SpotDetailsTriggerProps) {
   const { user } = useUser();
 
-  const bookmarks = useQuery(api.spots.bookmarks);
+  const bookmarks = useQuery(api.spots.bookmarks, !user ? "skip" : undefined);
 
   const comments =
     useQuery(api.spots.comments, {
