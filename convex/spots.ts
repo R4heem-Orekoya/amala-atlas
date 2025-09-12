@@ -304,3 +304,60 @@ export const addSpotWithImages = mutation({
     return spotId;
   },
 });
+
+
+export const allUpvotes = query({
+  handler: async (ctx) => {
+    return await ctx.db.query("upvotes").collect();
+  },
+});
+
+export const allDownvotes = query({
+  handler: async (ctx) => {
+    return await ctx.db.query("downvotes").collect();
+  },
+});
+
+export const findSimilarSpots = query({
+  args: {
+    name: v.string(),
+    address: v.string(),
+  },
+  handler: async ({ db }, { name, address }) => {
+    if (!name && !address) return [];
+
+    const spots = await db.query("spots").collect();
+
+    const normalize = (s?: string) =>
+      (s || "")
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/gi, "")
+        .trim();
+
+    const nName = normalize(name);
+    const nAddress = normalize(address);
+
+    const matches = spots.filter((s) => {
+      const sName = normalize(s.name);
+      const sAddress = normalize(s.address);
+      return (
+        (nName && sName.includes(nName)) ||
+        (nAddress && sAddress.includes(nAddress))
+      );
+    });
+
+    return matches.slice(0, 10);
+  },
+});
+
+export const imagesBySpot = query({
+  args: {
+    spotId: v.id("spots"),
+  },
+  handler: async ({ db }, { spotId }) => {
+    return await db
+      .query("images")
+      .withIndex("by_spot", (q) => q.eq("spotId", spotId))
+      .collect();
+  },
+});
