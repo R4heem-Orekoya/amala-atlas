@@ -1,7 +1,7 @@
 import { mutation, query } from "./_generated/server";
 import { ConvexError, v } from "convex/values";
 import { haversine } from "./utils";
-import { getCurrentUserOrThrow } from "./users";
+import { getCurrentUser, getCurrentUserOrThrow } from "./users";
 
 export const nearby = query({
    args: {
@@ -60,7 +60,14 @@ export const addComment = mutation({
       text: v.string(),
    },
    handler: async (ctx, { spotId, text }) => {
-      const user = await getCurrentUserOrThrow(ctx);
+      const user = await getCurrentUser(ctx);
+
+      if (!user) {
+         return {
+            error: true,
+            message: "You're not signed in!",
+         };
+      }
 
       const comment = await ctx.db.insert("comments", {
          spotId,
@@ -68,7 +75,10 @@ export const addComment = mutation({
          userId: user.externalId,
       });
 
-      return comment;
+      return {
+         error: false,
+         comment,
+      };
    },
 });
 
@@ -115,7 +125,13 @@ export const upvote = mutation({
       spotId: v.id("spots"),
    },
    handler: async (ctx, { spotId }) => {
-      const user = await getCurrentUserOrThrow(ctx);
+      const user = await getCurrentUser(ctx);
+
+      if (!user)
+         return {
+            error: true,
+            message: "You are not signed in!",
+         };
 
       const existingUpvote = await ctx.db
          .query("upvotes")
@@ -152,7 +168,13 @@ export const downvote = mutation({
       spotId: v.id("spots"),
    },
    handler: async (ctx, { spotId }) => {
-      const user = await getCurrentUserOrThrow(ctx);
+      const user = await getCurrentUser(ctx);
+
+      if (!user)
+         return {
+            error: true,
+            message: "You are not signed in!",
+         };
 
       const existingDownvote = await ctx.db
          .query("downvotes")
@@ -203,7 +225,13 @@ export const bookmark = mutation({
       spotId: v.id("spots"),
    },
    handler: async (ctx, { spotId }) => {
-      const user = await getCurrentUserOrThrow(ctx);
+      const user = await getCurrentUser(ctx);
+
+      if (!user)
+         return {
+            error: true,
+            message: "You are not signed in!",
+         };
 
       const existingBookmark = await ctx.db
          .query("bookmarks")
@@ -247,117 +275,115 @@ export const bookmarks = query({
    },
 });
 
-
 export const generateImageUploadUrl = mutation({
-  handler: async (ctx) => {
-    await getCurrentUserOrThrow(ctx);
-    const uploadUrl = await ctx.storage.generateUploadUrl();
-    return uploadUrl;
-  },
+   handler: async (ctx) => {
+      await getCurrentUserOrThrow(ctx);
+      const uploadUrl = await ctx.storage.generateUploadUrl();
+      return uploadUrl;
+   },
 });
 
 export const addSpotWithImages = mutation({
-  args: {
-    name: v.string(),
-    address: v.string(),
-    category: v.string(),
-    description: v.optional(v.string()),
-    tags: v.optional(v.array(v.string())),
-    latitude: v.optional(v.float64()),
-    longitude: v.optional(v.float64()),
-    rating: v.optional(v.float64()),
-    imageStorageIds: v.array(v.id("_storage")),
-  },
-  handler: async (ctx, args) => {
-    const user = await getCurrentUserOrThrow(ctx);
+   args: {
+      name: v.string(),
+      address: v.string(),
+      category: v.string(),
+      description: v.optional(v.string()),
+      tags: v.optional(v.array(v.string())),
+      latitude: v.optional(v.float64()),
+      longitude: v.optional(v.float64()),
+      rating: v.optional(v.float64()),
+      imageStorageIds: v.array(v.id("_storage")),
+   },
+   handler: async (ctx, args) => {
+      const user = await getCurrentUserOrThrow(ctx);
 
-    const spotId = await ctx.db.insert("spots", {
-      userId: user.externalId,
-      name: args.name,
-      address: args.address,
-      city: "",
-      cuisine: args.category,
-      rating: args.rating,
-      description: args.description,
-      tags: args.tags,
-      metadata: {
-        websiteUrl: undefined,
-        twitterUrl: undefined,
-        igurl: undefined,
-        fburl: undefined,
-      },
-      sourceUrl: undefined,
-      geocoords: {
-        lat: args.latitude ?? 0,
-        long: args.longitude ?? 0,
-      },
-    });
-
-    for (const storageId of args.imageStorageIds) {
-      await ctx.db.insert("images", {
-        spotId,
-        url: (await ctx.storage.getUrl(storageId)) || "",
-        key: storageId.toString(),
+      const spotId = await ctx.db.insert("spots", {
+         userId: user.externalId,
+         name: args.name,
+         address: args.address,
+         city: "",
+         cuisine: args.category,
+         rating: args.rating,
+         description: args.description,
+         tags: args.tags,
+         metadata: {
+            websiteUrl: undefined,
+            twitterUrl: undefined,
+            igurl: undefined,
+            fburl: undefined,
+         },
+         sourceUrl: undefined,
+         geocoords: {
+            lat: args.latitude ?? 0,
+            long: args.longitude ?? 0,
+         },
       });
-    }
 
-    return spotId;
-  },
+      for (const storageId of args.imageStorageIds) {
+         await ctx.db.insert("images", {
+            spotId,
+            url: (await ctx.storage.getUrl(storageId)) || "",
+            key: storageId.toString(),
+         });
+      }
+
+      return spotId;
+   },
 });
 
-
 export const allUpvotes = query({
-  handler: async (ctx) => {
-    return await ctx.db.query("upvotes").collect();
-  },
+   handler: async (ctx) => {
+      return await ctx.db.query("upvotes").collect();
+   },
 });
 
 export const allDownvotes = query({
-  handler: async (ctx) => {
-    return await ctx.db.query("downvotes").collect();
-  },
+   handler: async (ctx) => {
+      return await ctx.db.query("downvotes").collect();
+   },
 });
 
 export const findSimilarSpots = query({
-  args: {
-    name: v.string(),
-    address: v.string(),
-  },
-  handler: async ({ db }, { name, address }) => {
-    if (!name && !address) return [];
+   args: {
+      name: v.string(),
+      address: v.string(),
+   },
+   handler: async ({ db }, { name, address }) => {
+      if (!name && !address) return [];
 
-    const spots = await db.query("spots").collect();
+      const spots = await db.query("spots").collect();
 
-    const normalize = (s?: string) =>
-      (s || "")
-        .toLowerCase()
-        .replace(/[^a-z0-9\s]/gi, "")
-        .trim();
+      const normalize = (s?: string) =>
+         (s || "")
+            .toLowerCase()
+            .replace(/[^a-z0-9\s]/gi, "")
+            .trim();
 
-    const nName = normalize(name);
-    const nAddress = normalize(address);
+      const nName = normalize(name);
+      const nAddress = normalize(address);
 
-    const matches = spots.filter((s) => {
-      const sName = normalize(s.name);
-      const sAddress = normalize(s.address);
-      return (
-        (nName && sName.includes(nName)) ||
-        (nAddress && sAddress.includes(nAddress))
-      );
-    });
+      const matches = spots.filter((s) => {
+         const sName = normalize(s.name);
+         const sAddress = normalize(s.address);
+         return (
+            (nName && sName.includes(nName)) ||
+            (nAddress && sAddress.includes(nAddress))
+         );
+      });
 
-    return matches.slice(0, 10);
-  },
+      return matches.slice(0, 10);
+   },
 });
 
 export const imagesBySpot = query({
-  args: {
-    spotId: v.id("spots"),
-  },
-  handler: async ({ db }, { spotId }) => {
-    return await db
-      .query("images")
-      .withIndex("by_spot", (q) => q.eq("spotId", spotId))
-      .collect();
-  },
+   args: {
+      spotId: v.id("spots"),
+   },
+   handler: async ({ db }, { spotId }) => {
+      return await db
+         .query("images")
+         .withIndex("by_spot", (q) => q.eq("spotId", spotId))
+         .collect();
+   },
 });
