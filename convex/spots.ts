@@ -246,3 +246,61 @@ export const bookmarks = query({
       return bookmarksWithSpots;
    },
 });
+
+
+export const generateImageUploadUrl = mutation({
+  handler: async (ctx) => {
+    await getCurrentUserOrThrow(ctx);
+    const uploadUrl = await ctx.storage.generateUploadUrl();
+    return uploadUrl;
+  },
+});
+
+export const addSpotWithImages = mutation({
+  args: {
+    name: v.string(),
+    address: v.string(),
+    category: v.string(),
+    description: v.optional(v.string()),
+    tags: v.optional(v.array(v.string())),
+    latitude: v.optional(v.float64()),
+    longitude: v.optional(v.float64()),
+    rating: v.optional(v.float64()),
+    imageStorageIds: v.array(v.id("_storage")),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUserOrThrow(ctx);
+
+    const spotId = await ctx.db.insert("spots", {
+      userId: user.externalId,
+      name: args.name,
+      address: args.address,
+      city: "",
+      cuisine: args.category,
+      rating: args.rating,
+      description: args.description,
+      tags: args.tags,
+      metadata: {
+        websiteUrl: undefined,
+        twitterUrl: undefined,
+        igurl: undefined,
+        fburl: undefined,
+      },
+      sourceUrl: undefined,
+      geocoords: {
+        lat: args.latitude ?? 0,
+        long: args.longitude ?? 0,
+      },
+    });
+
+    for (const storageId of args.imageStorageIds) {
+      await ctx.db.insert("images", {
+        spotId,
+        url: (await ctx.storage.getUrl(storageId)) || "",
+        key: storageId.toString(),
+      });
+    }
+
+    return spotId;
+  },
+});

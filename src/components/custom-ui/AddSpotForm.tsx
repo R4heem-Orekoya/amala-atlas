@@ -20,36 +20,36 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, MapPin, Upload, X } from "lucide-react";
+import { Loader2, MapPin, X } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { ScrollArea } from "../ui/scroll-area";
+import { ImageDropzone } from "./ImageDropzone";
+import { useMutation } from "convex/react";
+import { api } from "../../../convex/_generated/api";
+import { toast } from "sonner";
 
-// Zod schema for form validation
 const formSchema = z.object({
-  name: z.string().min(2, {
-    message: "Name must be at least 2 characters.",
-  }),
-  address: z.string().min(5, {
-    message: "Address must be at least 5 characters.",
-  }),
-  category: z.string({
-    message: "Please select a category.",
-  }),
+  name: z.string().min(2, { message: "Name must be at least 2 characters." }),
+  address: z
+    .string()
+    .min(5, { message: "Address must be at least 5 characters." }),
+  category: z.string({ message: "Please select a category." }),
   description: z.string().optional(),
   tags: z.string().optional(),
   latitude: z.number().min(-90).max(90).optional(),
   longitude: z.number().min(-180).max(180).optional(),
+  images: z.array(z.instanceof(File)).min(1, "At least one image is required."),
+  rating: z.number().min(0).max(5).optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
 
 export function AddSpotForm() {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [uploadedImages, setUploadedImages] = useState<File[]>([]);
-  const [isDragging, setIsDragging] = useState(false);
-
+   const generateUploadUrl = useMutation(api.spots.generateImageUploadUrl);
+  const addSpotWithImages = useMutation(api.spots.addSpotWithImages);
+  
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -60,82 +60,54 @@ export function AddSpotForm() {
     },
   });
 
-  function onSubmit(data: FormValues) {
-    setIsSubmitting(true);
+ async function onSubmit(data: FormValues) {
+   // tags array
+   const tagsArray = data.tags ? data.tags.split(",").map((t) => t.trim()) : [];
 
-    // Create FormData to include files
-    const formData = new FormData();
-    Object.entries(data).forEach(([key, value]) => {
-      if (value !== undefined) formData.append(key, value.toString());
-    });
+   toast.promise(
+     (async () => {
+       // Step 1: generate upload URLs for each image file
+       const uploadUrls = await Promise.all(
+         data.images.map(() => generateUploadUrl())
+       );
 
-    uploadedImages.forEach((file) => {
-      formData.append("images", file);
-    });
+       // Step 2: upload each file to its URL
+       const responses = await Promise.all(
+         data.images.map((file, idx) => {
+           return fetch(uploadUrls[idx], {
+             method: "POST",
+             headers: { "Content-Type": file.type },
+             body: file,
+           }).then((res) => res.json());
+         })
+       );
 
-    // Simulate API call
-    setTimeout(() => {
-      console.log("Form submitted:", data);
-      console.log("Uploaded images:", uploadedImages);
-      setIsSubmitting(false);
-      // Reset form and images on successful submission
-      form.reset();
-      setUploadedImages([]);
-    }, 2000);
-  }
+       // Each response should contain a `storageId`
+       const storageIds = responses.map((r) => r.storageId);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files) {
-      handleFiles(files);
-    }
-  };
+       // Step 3: call convex mutation
+       await addSpotWithImages({
+         name: data.name,
+         address: data.address,
+         category: data.category,
+         description: data.description,
+         tags: tagsArray,
+         latitude: data.latitude,
+         longitude: data.longitude,
+         rating: data.rating,
+         imageStorageIds: storageIds,
+       });
 
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setIsDragging(false);
-  };
-
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setIsDragging(false);
-
-    const files = e.dataTransfer.files;
-    handleFiles(files);
-  };
-
-  const handleFiles = (files: FileList) => {
-    const newImages: File[] = [];
-
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-
-      // Validate file type
-      if (!file.type.startsWith("image/")) {
-        alert("Please upload only image files");
-        continue;
-      }
-
-      // Validate file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        alert("File size should be less than 5MB");
-        continue;
-      }
-
-      newImages.push(file);
-    }
-
-    setUploadedImages((prev) => [...prev, ...newImages]);
-  };
-
-  const removeImage = (index: number) => {
-    setUploadedImages((prev) => prev.filter((_, i) => i !== index));
-  };
+       // Reset form after success
+       form.reset();
+     })(),
+     {
+       loading: "Adding your Amala spot...",
+       success: "Amala spot added successfully 🎉",
+       error: "Failed to add spot. Please try again.",
+     }
+   );
+ }
 
   return (
     <div className="mx-auto flex-1 flex flex-col min-h-full mt-4">
@@ -151,69 +123,28 @@ export function AddSpotForm() {
             onSubmit={form.handleSubmit(onSubmit)}
             className="space-y-6"
           >
-            <div className="space-y-4">
-              <FormLabel className="sr-only">Photos</FormLabel>
-              <div
-                className={`border-2 border-dashed rounded-lg h-56 flex flex-col justify-center items-center p-6 text-center cursor-pointer transition-colors ${
-                  isDragging
-                    ? "border-primary bg-primary/5"
-                    : "border-muted-foreground/25"
-                }`}
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-                onClick={() => document.getElementById("file-upload")?.click()}
-              >
-                <Input
-                  id="file-upload"
-                  type="file"
-                  multiple
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleFileChange}
-                />
-                <Upload className="mx-auto h-10 w-10 text-muted-foreground" />
-                <div className="mt-4 flex text-sm text-muted-foreground">
-                  <span className="relative cursor-pointer rounded-md font-medium text-primary focus-within:outline-none focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 hover:text-primary">
-                    Upload photos
-                  </span>
-                  <p className="pl-1">or drag and drop</p>
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  PNG, JPG, GIF up to 5MB
-                </p>
-              </div>
-
-              {uploadedImages.length > 0 && (
-                <div className="grid grid-cols-3 gap-4 mt-4">
-                  {uploadedImages.map((file, index) => (
-                    <div
-                      key={index}
-                      className="relative group"
-                    >
-                      <img
-                        src={URL.createObjectURL(file)}
-                        alt={`Preview ${index + 1}`}
-                        className="h-24 w-full object-cover rounded-md"
-                      />
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          removeImage(index);
-                        }}
-                        className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                      <p className="text-xs text-muted-foreground truncate mt-1">
-                        {file.name}
-                      </p>
-                    </div>
-                  ))}
-                </div>
+            {/* Images */}
+            <FormField
+              control={form.control}
+              name="images"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="sr-only">Photos</FormLabel>
+                  <FormControl>
+                    <ImageDropzone
+                      field={field}
+                      value={field.value || []}
+                      onChange={(files) => {
+                        field.onChange(files);
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )}
-            </div>
+            />
+
+            {/* Name */}
             <FormField
               control={form.control}
               name="name"
@@ -234,6 +165,7 @@ export function AddSpotForm() {
               )}
             />
 
+            {/* Address */}
             <FormField
               control={form.control}
               name="address"
@@ -258,6 +190,7 @@ export function AddSpotForm() {
               )}
             />
 
+            {/* Lat / Lng + Category + Rating */}
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -271,7 +204,13 @@ export function AddSpotForm() {
                         step="any"
                         placeholder="e.g., 6.5244"
                         {...field}
-                        onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                        onChange={(e) =>
+                          field.onChange(
+                            e.target.value === ""
+                              ? undefined
+                              : e.target.valueAsNumber
+                          )
+                        }
                       />
                     </FormControl>
                     <FormMessage />
@@ -291,7 +230,69 @@ export function AddSpotForm() {
                         step="any"
                         placeholder="e.g., 3.3792"
                         {...field}
-                        onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                        onChange={(e) =>
+                          field.onChange(
+                            e.target.value === ""
+                              ? undefined
+                              : e.target.valueAsNumber
+                          )
+                        }
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="category"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Category</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a category" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="restaurant">Restaurant</SelectItem>
+                        <SelectItem value="street-food">Street Food</SelectItem>
+                        <SelectItem value="cafe">Cafe</SelectItem>
+                        <SelectItem value="food-joint">Food Joint</SelectItem>
+                        <SelectItem value="bukateria">Bukateria</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="rating"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Rating (Optional)</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        step="0.1"
+                        min="0"
+                        max="5"
+                        placeholder="e.g., 4.5"
+                        {...field}
+                        onChange={(e) =>
+                          field.onChange(
+                            e.target.value === ""
+                              ? undefined
+                              : e.target.valueAsNumber
+                          )
+                        }
                       />
                     </FormControl>
                     <FormMessage />
@@ -300,37 +301,7 @@ export function AddSpotForm() {
               />
             </div>
 
-            <FormField
-              control={form.control}
-              name="category"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Category</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a category" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="restaurant">Restaurant</SelectItem>
-                      <SelectItem value="street-food">Street Food</SelectItem>
-                      <SelectItem value="cafe">Cafe</SelectItem>
-                      <SelectItem value="food-joint">Food Joint</SelectItem>
-                      <SelectItem value="bukateria">Bukateria</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormDescription>
-                    What type of food establishment is this?
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
+            {/* Description */}
             <FormField
               control={form.control}
               name="description"
@@ -353,6 +324,7 @@ export function AddSpotForm() {
               )}
             />
 
+            {/* Tags */}
             <FormField
               control={form.control}
               name="tags"
@@ -373,12 +345,13 @@ export function AddSpotForm() {
               )}
             />
 
+            {/* Submit */}
             <div className="flex flex-col gap-4 pt-4">
               <Button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={form.formState.isSubmitting}
               >
-                {isSubmitting && (
+                {form.formState.isSubmitting && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 )}
                 Add Spot
