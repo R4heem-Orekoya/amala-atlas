@@ -1,14 +1,64 @@
+// app/api/agent/parse/route.ts
 import { NextResponse } from "next/server";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+type ParsedSpot = {
+  name?: string;
+  address?: string;
+  city?: string;
+  category?: string;
+  cuisine?: string;
+  tags?: string[];
+  rating?: number;
+  priceBand?: string | null;
+  description?: string;
+  latitude?: number;
+  longitude?: number;
+  confidence?: number;
+  needsClarification?: boolean;
+  clarifyingQuestion?: string | null;
+  //eslint-disable-next-line
+  provenance?: any;
+};
+
+type AgentResponse = {
+  parsed: ParsedSpot;
+  suggestedCoordinates?: {
+    latitude: number;
+    longitude: number;
+    source: "geocode" | "heuristic" | "user";
+  } | null;
+  //eslint-disable-next-line
+  duplicates?: any[];
+  nudges?: string[];
+  message: string;
+  needsClarification: boolean;
+};
+
 const NOMINATIM_USER_AGENT =
   process.env.NOMINATIM_USER_AGENT || "AmalaAtlas/1.0 (contact@example.com)";
 
-if (!GEMINI_API_KEY) {
-  console.warn(
-    "GEMINI_API_KEY not set. /api/agent/parse will fail unless provided."
-  );
+const ai = new GoogleGenAI({});
+
+function extractJSON(text: string) {
+  try {
+    if (!text) return {};
+
+    // Remove markdown fences like ```json ... ```
+    text = text
+      .replace(/```[a-z]*\n?/gi, "")
+      .replace(/```/g, "")
+      .trim();
+
+    // Find first {...} block
+    const match = text.match(/\{[\s\S]*\}/);
+    if (!match) return {};
+
+    return JSON.parse(match[0]);
+  } catch (e) {
+    console.warn("Failed to parse AI JSON:", e, text);
+    return {};
+  }
 }
 
 export async function POST(request: Request) {
@@ -17,50 +67,63 @@ export async function POST(request: Request) {
     const text = (body?.text ?? "").toString();
     const conversation = body?.conversation ?? [];
 
-    if (!text || text.trim().length === 0) {
+    if (!text.trim()) {
       return NextResponse.json({ error: "Missing text" }, { status: 400 });
     }
 
-    const systemPrompt = `You are a data extraction assistant for Amala Atlas.
-Given a user message describing a food spot, extract structured fields (name, address, city, category, cuisine, tags (array), rating (0-5), priceBand, description, latitude, longitude).
-If any REQUIRED fields (name, address, category) are missing or ambiguous, respond with needsClarification=true and provide a single clarifyingQuestion string. Do NOT assume missing required fields.
-Return a JSON object with: parsed, confidence, needsClarification, clarifyingQuestion.
-`;
+    const systemPrompt = `You are a data extraction assistant for Amala Atlas, 
+a community platform for mapping ONLY "Amala" spots in Nigeria. 
+"Amala" is a traditional Yoruba dish made from yam, cassava, or plantain flour.
 
-    // init Gemini
-    const genAI = new GoogleGenerativeAI(GEMINI_API_KEY!);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+Your tasks:
+1. If the user is describing an **Amala spot** (buka, restaurant, cafeteria, etc.), 
+   extract structured fields:
 
-    // build prompt (Gemini does not support function_call like OpenAI, so force JSON)
-    const messages = [
-      systemPrompt,
+   - name (string)
+   - address (string)
+   - city (string)
+   - category (string, e.g. "restaurant", "buka", "cafeteria")
+   - cuisine (string, must include "Amala" or "Yoruba")
+   - tags (array of short strings)
+   - rating (0–5)
+   - priceBand (string or null, e.g. "cheap", "moderate", "expensive")
+   - description (string)
+   - latitude (number, optional)
+   - longitude (number, optional)
+
+   If any REQUIRED fields (name, address, category) are missing or ambiguous,
+   respond with needsClarification=true and provide a single clarifyingQuestion string. 
+   Do NOT assume missing required fields.
+
+2. If the user is describing a **non-Amala spot** (e.g. pizza, burger, shawarma),
+   set needsClarification=true and clarifyingQuestion="Amala Atlas is only for Amala spots. 
+   This entry doesn’t seem related to Amala." Do NOT try to parse details for non-Amala spots.
+
+Return ONLY valid JSON (no markdown, no comments).`.trim();
+
+    const fullPrompt = [
+      { role: "system", content: systemPrompt },
       ...(Array.isArray(conversation)
-        ? conversation.map((m: any) => m.text)
+        ? //eslint-disable-next-line
+          conversation.map((m: any) => ({ role: m.role, content: m.text }))
         : []),
-      text,
-    ].join("\n\n");
+      { role: "user", content: text },
+    ];
 
-    const result = await model.generateContent(messages);
-    const responseText = result.response.text();
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: fullPrompt.map((m) => m.content).join("\n"),
+    });
 
-    let parsed: any = {};
-    try {
-      // try to parse JSON from Gemini output
-      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        parsed = JSON.parse(jsonMatch[0]);
-      }
-    } catch (e) {
-      console.error("JSON parse error", e);
-    }
+    const rawText = response.text ?? "";
+    const parsed: ParsedSpot = extractJSON(rawText);
 
-    parsed = parsed || {};
     parsed.confidence = parsed.confidence ?? 0.7;
+    parsed.needsClarification = !!parsed.needsClarification;
 
-    // required fields enforcement
-    const required: (keyof typeof parsed)[] = ["name", "address", "category"];
+    const required: (keyof ParsedSpot)[] = ["name", "address", "category"];
     const missing = required.filter((f) => !parsed[f]);
-    if (missing.length > 0) {
+    if (!parsed.needsClarification && missing.length > 0) {
       parsed.needsClarification = true;
       parsed.clarifyingQuestion =
         parsed.clarifyingQuestion ||
@@ -69,17 +132,25 @@ Return a JSON object with: parsed, confidence, needsClarification, clarifyingQue
         )}?`;
     }
 
-    // coords via Nominatim
+    const assistantMessage = parsed.needsClarification
+      ? parsed.clarifyingQuestion ||
+        "I need more information to complete the form."
+      : "I parsed the Amala spot. Prefilling the form for you.";
+
     let suggestedCoordinates = null;
-    if ((!parsed.latitude || !parsed.longitude) && parsed.address) {
+    if (parsed.address && parsed.address.trim().length > 0) {
       try {
-        const q = encodeURIComponent(parsed.address);
-        const nomUrl = `https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=1`;
-        const nomRes = await fetch(nomUrl, {
-          headers: { "User-Agent": NOMINATIM_USER_AGENT },
-        });
+        const query = `${parsed.address.trim()}, Nigeria`;
+        const q = encodeURIComponent(query);
+
+        const nomRes = await fetch(
+          `https://nominatim.openstreetmap.org/search?q=${q}&format=json&addressdetails=1&limit=1`,
+          { headers: { "User-Agent": NOMINATIM_USER_AGENT } }
+        );
+
         if (nomRes.ok) {
           const nomJson = await nomRes.json();
+          console.log("Nominatim raw response:", nomJson);
           if (Array.isArray(nomJson) && nomJson.length > 0) {
             const top = nomJson[0];
             suggestedCoordinates = {
@@ -94,24 +165,23 @@ Return a JSON object with: parsed, confidence, needsClarification, clarifyingQue
       }
     }
 
-    // nudges
     const nudges: string[] = [];
-    if ((!parsed.tags || parsed.tags.length === 0) && parsed.confidence < 0.8) {
-      nudges.push("Add tags to help others find this spot.");
-    }
+    if ((!parsed.tags || parsed.tags.length === 0) && parsed.confidence < 0.8)
+      nudges.push("Add tags to help others find this Amala spot.");
     if (!parsed.description)
       nudges.push("A short description (1–2 lines) helps users decide.");
 
-    return NextResponse.json({
+    const finalResponse: AgentResponse = {
       parsed,
       suggestedCoordinates,
       duplicates: [],
       nudges,
-      message: parsed.needsClarification
-        ? parsed.clarifyingQuestion
-        : "Parsed fields",
-      needsClarification: !!parsed.needsClarification,
-    });
+      message: assistantMessage,
+      needsClarification: parsed.needsClarification,
+    };
+
+    return NextResponse.json(finalResponse);
+    //eslint-disable-next-line
   } catch (err: any) {
     console.error("Agent parse error:", err);
     return NextResponse.json(

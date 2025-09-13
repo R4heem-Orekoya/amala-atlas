@@ -1,4 +1,3 @@
-// components/ui/AiChat.tsx
 "use client";
 
 import { useState, useRef, useEffect } from "react";
@@ -6,8 +5,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "./button";
 import { cn } from "@/lib/utils";
 import { ImageIcon, FileUp, ArrowUpIcon } from "lucide-react";
+import { TypingIndicator } from "../custom-ui/TypingIndicator";
 
 type AIChatProps = {
+  //eslint-disable-next-line
   onExtract?: (data: any) => void;
 };
 
@@ -37,40 +38,41 @@ export function AIChat({ onExtract }: AIChatProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           text: msgText,
-          conversation: messages, // optional history to help context
+          conversation: messages,
         }),
       });
 
       const json = await res.json();
 
+      let assistantText = "Parsed fields successfully.";
       if (json?.needsClarification) {
-        // assistant asks clarification — show question and WAIT for user to reply
-        const assistantText =
-          json.message || json.parsed?.clarifyingQuestion || "Can you clarify?";
-        setMessages((m) => [...m, { role: "assistant", text: assistantText }]);
-        // do NOT call onExtract
+        assistantText =
+          json.message ||
+          json.parsed?.clarifyingQuestion ||
+          "I need a bit more info to complete the form.";
       } else {
-        // parsed output ready — show short assistant summary and call onExtract
-        const assistantText =
+        assistantText =
           json.message || "I parsed the spot. Prefilling the form.";
-        setMessages((m) => [...m, { role: "assistant", text: assistantText }]);
-        if (onExtract && json.parsed) {
-          onExtract(json.parsed);
-        }
-        // If coordinates were suggested, include that as a follow-up message for the user
-        if (json.suggestedCoordinates) {
-          setMessages((m) => [
-            ...m,
-            {
-              role: "assistant",
-              text: `Suggested coordinates: ${json.suggestedCoordinates.latitude.toFixed(
-                5
-              )}, ${json.suggestedCoordinates.longitude.toFixed(
-                5
-              )} (from geocoding)`,
-            },
-          ]);
-        }
+      }
+
+      setMessages((m) => [...m, { role: "assistant", text: assistantText }]);
+
+      if (onExtract && json.parsed) {
+        onExtract(json.parsed);
+      }
+
+      if (json.suggestedCoordinates) {
+        setMessages((m) => [
+          ...m,
+          {
+            role: "assistant",
+            text: `Suggested coordinates: ${json.suggestedCoordinates.latitude.toFixed(
+              5
+            )}, ${json.suggestedCoordinates.longitude.toFixed(
+              5
+            )} (from geocoding)`,
+          },
+        ]);
       }
     } catch (err) {
       setMessages((m) => [
@@ -170,6 +172,11 @@ export function AIChat({ onExtract }: AIChatProps) {
                 {m.text}
               </div>
             ))}
+            {isLoading && (
+              <div className="self-start">
+                <TypingIndicator />
+              </div>
+            )}
             <div ref={bottomRef} />
           </div>
 
