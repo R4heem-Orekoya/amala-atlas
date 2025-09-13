@@ -30,15 +30,22 @@ export default function AddCommentForm({ spotId }: AddCommentFormProps) {
 
    async function onsubmit(data: TComment) {
       try {
-         await addNewComment({
+         const res = await addNewComment({
             text: data.text,
             spotId,
          });
 
+         if (res.error) {
+            toast.error(res.message);
+            return;
+         }
+
          reset();
       } catch (error) {
          toast.error(
-            error instanceof ConvexError ? error.message : "Something went wrong!"
+            error instanceof ConvexError
+               ? error.message
+               : "Something went wrong!"
          );
       }
    }

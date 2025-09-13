@@ -243,6 +243,7 @@ export default function RootLayout({
               {children}
               <Toaster
                 richColors
+                        closeButton
                 position="top-right"
                 className="z-[99999]"
               />
