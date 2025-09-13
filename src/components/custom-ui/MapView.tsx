@@ -14,7 +14,7 @@ export default function MapView({ mapContainerRef }: MapViewProps) {
    const { selectedLocation } = useMap();
 
    return (
-      <div className="sticky top-6  h-[calc(100vh-48px)]  border rounded-lg overflow-hidden">
+      <div className="sticky top-6  h-[calc(100vh-48px)] border rounded-lg overflow-hidden">
          <div
             id="map-container"
             ref={mapContainerRef}

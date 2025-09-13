@@ -1,28 +1,33 @@
 "use client";
 
-import { useMap } from "@/context/map";
 import { Navigation03Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Doc } from "../../convex/_generated/dataModel";
 import { Button } from "./ui/button";
+import { MapRef } from "react-map-gl/mapbox";
+import { useSelectedSpot } from "@/hooks/use-selected-spot";
 
 interface NavigateButtonProps {
    spot: Doc<"spots">;
+   mapRef: React.RefObject<MapRef | null>;
 }
 
-export default function NavigateButton({ spot }: NavigateButtonProps) {
-   const { map, setSelectedLocation } = useMap();
+export default function NavigateButton({ spot, mapRef }: NavigateButtonProps) {
+   const map = mapRef.current?.getMap();
+   const { setSelectedSpot } = useSelectedSpot();
    const [isSearching, setIsSearching] = useState(false);
+
+   if (!map) return null;
 
    async function handleClick() {
       try {
          setIsSearching(true);
-         setSelectedLocation(spot)
-         
-         if (map && spot.geocoords) {
-            map.flyTo({
+         setSelectedSpot(spot);
+
+         if (spot.geocoords) {
+            map?.flyTo({
                center: [spot.geocoords.long, spot.geocoords.lat],
                zoom: 14,
                speed: 1.5,

@@ -28,6 +28,7 @@ export default function MapProvider({
    const mapRef = useRef<mapboxgl.Map | null>(null);
    const [loaded, setLoaded] = useState(false);
 
+   // Initialize map once
    useEffect(() => {
       if (!mapContainerRef.current || mapRef.current) return;
 
@@ -49,6 +50,19 @@ export default function MapProvider({
          mapRef.current = null;
       };
    }, [initialViewState, mapContainerRef]);
+
+   // 🔑 Resize map whenever the container changes size (e.g. tab becomes visible)
+   useEffect(() => {
+      if (!mapRef.current || !mapContainerRef.current) return;
+
+      const resizeObserver = new ResizeObserver(() => {
+         mapRef.current?.resize();
+      });
+
+      resizeObserver.observe(mapContainerRef.current);
+
+      return () => resizeObserver.disconnect();
+   }, [mapContainerRef]);
 
    return (
       <MapContext.Provider

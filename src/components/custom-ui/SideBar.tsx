@@ -9,12 +9,12 @@ const SideBar = async ({ children }: { children: ReactNode }) => {
    const appUser = mapClerkUser(user)
    
    return (
-      <div className="h-full relative">
+      <div className="h-full max-lg:pb-16 relative">
          <DesktopSideBar
             currentUser={appUser!}
          />
          <MobileTab />
-         <div className="md:pl-20 h-full">
+         <div className="md:pl-16 h-full">
             {children}
          </div>
       </div>
