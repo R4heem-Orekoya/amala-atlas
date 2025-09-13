@@ -1,4 +1,4 @@
-import type { NextConfig } from "next";
+import { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
@@ -8,8 +8,13 @@ const nextConfig: NextConfig = {
         hostname: "stoic-penguin-902.convex.cloud",
         pathname: "/api/storage/**",
       },
+      {
+        protocol: "https",
+        hostname: "api.dicebear.com",
+        pathname: "/**",
+      },
     ],
   },
 };
 
-export default nextConfig;
+export default nextConfig
