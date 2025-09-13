@@ -21,8 +21,15 @@ export default function Page() {
       <div className="col-span-6">
         <div className="sticky top-6 h-[calc(100vh-48px)] border border-black/20 rounded-lg overflow-hidden flex justify-center items-center">
           <AIChat
-            onExtract={(data) => {
-              setPrefill(data);
+            onExtract={(parsed) => {
+               const prepared = {
+                 ...parsed,
+                 tags: Array.isArray(parsed.tags)
+                   ? parsed.tags.join(", ")
+                   : parsed.tags,
+                 images: undefined,
+               };
+               setPrefill(prepared);
             }}
           />
         </div>

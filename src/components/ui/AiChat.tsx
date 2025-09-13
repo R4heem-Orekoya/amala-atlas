@@ -1,18 +1,13 @@
+// components/ui/AiChat.tsx
 "use client";
+
 import { useState, useRef, useEffect } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "./button";
 import { cn } from "@/lib/utils";
-import {
-  ImageIcon,
-  FileUp,
-  ArrowUpIcon,
-  Paperclip,
-  PlusIcon,
-} from "lucide-react";
+import { ImageIcon, FileUp, ArrowUpIcon } from "lucide-react";
 
 type AIChatProps = {
-  //eslint-disable-next-line
   onExtract?: (data: any) => void;
 };
 
@@ -21,53 +16,78 @@ export function AIChat({ onExtract }: AIChatProps) {
   const [messages, setMessages] = useState<
     { role: "user" | "assistant"; text: string }[]
   >([]);
+  const [isLoading, setIsLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement | null>(null);
-
-  const submitMessage = async () => {
-    const text = value.trim();
-    if (!text) return;
-
-    setMessages((prev) => [...prev, { role: "user", text }]);
-    setValue("");
-
-    try {
-      const res = await fetch("/api/parse-spot", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text }),
-      });
-      const json = await res.json();
-
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          text: `Parsed fields — ${JSON.stringify(json.summary || json)}`,
-        },
-      ]);
-
-      if (onExtract && json.parsed) {
-        onExtract(json.parsed);
-      }
-      //eslint-disable-next-line
-    } catch (err) {
-      setMessages((prev) => [
-        ...prev,
-        { role: "assistant", text: "❌ Failed to parse message." },
-      ]);
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      submitMessage();
-    }
-  };
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  async function sendMessage(text?: string) {
+    const msgText = (text ?? value).trim();
+    if (!msgText) return;
+    setIsLoading(true);
+    const userMsg = { role: "user" as const, text: msgText };
+    setMessages((m) => [...m, userMsg]);
+    setValue("");
+
+    try {
+      const res = await fetch("/api/agent/parse", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text: msgText,
+          conversation: messages, // optional history to help context
+        }),
+      });
+
+      const json = await res.json();
+
+      if (json?.needsClarification) {
+        // assistant asks clarification — show question and WAIT for user to reply
+        const assistantText =
+          json.message || json.parsed?.clarifyingQuestion || "Can you clarify?";
+        setMessages((m) => [...m, { role: "assistant", text: assistantText }]);
+        // do NOT call onExtract
+      } else {
+        // parsed output ready — show short assistant summary and call onExtract
+        const assistantText =
+          json.message || "I parsed the spot. Prefilling the form.";
+        setMessages((m) => [...m, { role: "assistant", text: assistantText }]);
+        if (onExtract && json.parsed) {
+          onExtract(json.parsed);
+        }
+        // If coordinates were suggested, include that as a follow-up message for the user
+        if (json.suggestedCoordinates) {
+          setMessages((m) => [
+            ...m,
+            {
+              role: "assistant",
+              text: `Suggested coordinates: ${json.suggestedCoordinates.latitude.toFixed(
+                5
+              )}, ${json.suggestedCoordinates.longitude.toFixed(
+                5
+              )} (from geocoding)`,
+            },
+          ]);
+        }
+      }
+    } catch (err) {
+      setMessages((m) => [
+        ...m,
+        { role: "assistant", text: "Failed to parse message (network error)." },
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  };
 
   const hasHistory = messages.length > 0;
 
@@ -75,9 +95,13 @@ export function AIChat({ onExtract }: AIChatProps) {
     <div className="flex flex-col items-center w-full max-w-4xl mx-auto p-4 space-y-6">
       {!hasHistory ? (
         <>
-          <h1 className="text-2xl font-semibold">
-            Tell me about the spot — I&apos;ll fill the form
+          <h1 className="text-4xl font-semibold text-black dark:text-white">
+            Describe your Amala spot
           </h1>
+          <p className="text-neutral-600 text-center max-w-lg">
+            Tell me the details (name, address, category, rating, tags...) and
+            I’ll help fill the form automatically.
+          </p>
 
           <div className="w-full">
             <div className="relative max-w-[700px] mx-auto rounded-xl border border-black/20 shadow">
@@ -87,69 +111,52 @@ export function AIChat({ onExtract }: AIChatProps) {
                 onKeyDown={handleKeyDown}
                 placeholder="Eg: Mama T’s Amala Joint, 12 Ojukwu St, Ibadan, Amala-focused, rating 4.8"
                 className={cn(
-                  "w-full px-4 py-3 resize-none border-none bg-transparent text-sm focus:outline-none focus-visible:ring-0"
+                  "w-full px-4 py-3 resize-none border-none bg-transparent text-sm"
                 )}
-                style={{ minHeight: 60, overflow: "hidden" }}
+                style={{ minHeight: 60 }}
               />
               <div className="flex items-center justify-between p-3">
-                <div className="flex items-center gap-2">
-                  <Button type="button">
-                    <Paperclip className="w-4 h-4 text-white" />
-                  </Button>
-                </div>
+                <div />
                 <div className="flex items-center gap-2">
                   <Button
                     variant="outline"
                     type="button"
-                    className="border-dashed border-black/40"
-                  >
-                    <PlusIcon className="w-4 h-4" />
-                    Project
-                  </Button>
-                  <Button
-                    variant="outline"
-                    type="button"
-                    onClick={submitMessage}
-                    disabled={!value.trim()}
+                    onClick={() => sendMessage()}
+                    disabled={!value.trim() || isLoading}
                     className={cn(
-                      "px-2 py-2 rounded-lg border border-black/30 flex items-center justify-center disabled:cursor-not-allowed",
+                      "px-2 py-2 rounded-lg border border-black/30",
                       value.trim() ? "bg-white text-black" : "text-zinc-400"
                     )}
                   >
-                    <ArrowUpIcon
-                      className={cn(
-                        "w-4 h-4",
-                        value.trim() ? "text-black" : "text-zinc-400"
-                      )}
-                    />
+                    <ArrowUpIcon className="w-4 h-4" />
                   </Button>
                 </div>
               </div>
             </div>
 
             <div className="flex items-center justify-center gap-3 mt-4">
-              <ActionButton
-                icon={<ImageIcon className="w-4 h-4" />}
-                label="Example: Quick parse"
-                onClick={() => {
+              <Button
+                variant="outline"
+                onClick={() =>
                   setValue(
-                    "Mama T's Amala Joint, 12 Ojukwu St, Ibadan, Amala-focused, lat 7.3775 lng 3.9470, tags: traditional, affordable, rating 4.8"
-                  );
-                }}
-              />
-              <ActionButton
-                icon={<FileUp className="w-4 h-4" />}
-                label="Example: Address only"
-                onClick={() => {
-                  setValue("Ajike's, 4 Broad St, Lagos Island");
-                }}
-              />
+                    "Mama T's Amala Joint, 12 Ojukwu St, Ibadan, Amala-focused, rating 4.8"
+                  )
+                }
+              >
+                <ImageIcon className="w-4 h-4 mr-2" /> Example: Quick parse
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setValue("Ajike's, 4 Broad St, Lagos Island")}
+              >
+                <FileUp className="w-4 h-4 mr-2" /> Example: Address only
+              </Button>
             </div>
           </div>
         </>
       ) : (
         <div className="w-full flex flex-col h-[600px]">
-          <div className="flex-1 overflow-y-auto p-4 space-y-3">
+          <div className="flex-1 overflow-y-auto p-4 space-y-3 flex flex-col justify-end">
             {messages.map((m, i) => (
               <div
                 key={i}
@@ -165,6 +172,7 @@ export function AIChat({ onExtract }: AIChatProps) {
             ))}
             <div ref={bottomRef} />
           </div>
+
           <div className="border-t p-3 bg-white">
             <div className="flex items-end gap-2">
               <Textarea
@@ -178,9 +186,8 @@ export function AIChat({ onExtract }: AIChatProps) {
               <Button
                 size="icon"
                 variant="default"
-                onClick={submitMessage}
+                onClick={() => sendMessage()}
                 disabled={!value.trim()}
-                className="rounded-full"
               >
                 <ArrowUpIcon className="w-4 h-4" />
               </Button>
@@ -192,24 +199,4 @@ export function AIChat({ onExtract }: AIChatProps) {
   );
 }
 
-function ActionButton({
-  icon,
-  label,
-  onClick,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  onClick?: () => void;
-}) {
-  return (
-    <Button
-      variant="outline"
-      type="button"
-      className="rounded-full"
-      onClick={onClick}
-    >
-      {icon}
-      <span className="text-xs ml-2">{label}</span>
-    </Button>
-  );
-}
+export default AIChat;
