@@ -41,7 +41,9 @@ export const metadata: Metadata = {
     },
   ],
   icons: {
-    icon: [{ url: "/icons/favicon-196.png", sizes: "196x196", type: "image/png" }],
+    icon: [
+      { url: "/icons/favicon-196.png", sizes: "196x196", type: "image/png" },
+    ],
     apple: [{ url: "/icons/apple-icon-180.png" }],
   },
   appleWebApp: {
@@ -222,12 +224,10 @@ export const metadata: Metadata = {
   },
 };
 
-
 export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
 };
- 
 
 export default function RootLayout({
   children,
@@ -243,7 +243,7 @@ export default function RootLayout({
               {children}
               <Toaster
                 richColors
-                        closeButton
+                closeButton
                 position="top-right"
                 className="z-[99999]"
               />
