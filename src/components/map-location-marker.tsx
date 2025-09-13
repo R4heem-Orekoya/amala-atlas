@@ -1,3 +1,5 @@
+"use client";
+
 import { MapPin } from "lucide-react";
 import Marker from "./marker";
 import { Doc } from "../../convex/_generated/dataModel";
@@ -7,12 +9,17 @@ import {
    PopoverTrigger,
 } from "@/components/ui/popover";
 import SpotCard from "./custom-ui/SpotCard";
+import { MapRef, useMap } from "react-map-gl/mapbox";
+import { useRef } from "react";
 
 interface LocationMarkerProps {
    spot: Doc<"spots">;
 }
 
 export function LocationMarker({ spot }: LocationMarkerProps) {
+   const { current: map } = useMap()
+   const mapRef = useRef(map as MapRef | null)
+   
    return (
       <Marker
          longitude={spot.geocoords.long}
@@ -26,12 +33,12 @@ export function LocationMarker({ spot }: LocationMarkerProps) {
                </div>
             </PopoverTrigger>
 
-            <PopoverContent
-               side="top"
-               align="center"
-               className="w-80 p-0"
-            >
-               <SpotCard key={spot._id} spot={spot} className="mt-0 border-none" />
+            <PopoverContent side="top" align="center" className="w-96 p-0">
+               <SpotCard
+                  spot={spot}
+                  className="mt-0 border-none"
+                  mapRef={mapRef}
+               />
             </PopoverContent>
          </Popover>
       </Marker>
